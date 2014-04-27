@@ -39,11 +39,11 @@ class cTimerWrapper
 	private:
 		bool mAbort;
 		bool mPaused;
-        SDL_TimerID mTimerID;
+        	SDL_TimerID mTimerID;
 		SDL_Thread *mThreadID;
-        unsigned int mEventCallbackDelay;
+        	unsigned int mEventCallbackDelay;
 
-    public:
+	public:
 		void FactorySetDelay(unsigned int delay) { mEventCallbackDelay = delay; };
 		void SetPause(bool pause) 
 		{
@@ -60,13 +60,13 @@ class cTimerWrapper
         
         static void AddTimer(cTimerWrapper *my_timer_instance);
 
-		static void AddThread(cTimerWrapper *my_timer_instance);
+	static void AddThread(cTimerWrapper *my_timer_instance);
 
         static void RemoveTimer(cTimerWrapper *my_timer_instance);
 
         static unsigned int timer_callback(unsigned int interval, void *pParam);
 
-		static int thread_function(void *data);
+	static int thread_function(void *data);
 };
 
 #endif
