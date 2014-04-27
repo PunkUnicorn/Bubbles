@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="BubbleWinDLL.cpp" />
+    <ClCompile Include="BubbleTimer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Bubble.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BubbleBubble.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BubbleDLL_PUBLIC.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BubbleSTDCALL.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BubbleFindCollisions.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BubbleEngine.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BubbleDimensionCracker.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BubbleTimer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BubbleTrace.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BubbleVariables.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Bubbles.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Bubble.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{034aeba6-f92e-4d53-9954-ef41e1e35c55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{d782b6d8-b00e-4e9d-8aaf-74f8719d97ee}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
