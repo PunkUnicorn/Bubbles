@@ -23,9 +23,9 @@ cTimerWrapper::~cTimerWrapper(void)
 void cTimerWrapper::AddTimer(cTimerWrapper *my_timer_instance)
 {
 	my_timer_instance->mTimerID = SDL_AddTimer( 
-        my_timer_instance->mEventCallbackDelay, 
-        cTimerWrapper::timer_callback, 
-        (void *) (my_timer_instance) );
+        	my_timer_instance->mEventCallbackDelay, 
+        	cTimerWrapper::timer_callback, 
+        	(void *) (my_timer_instance) );
 };
 
 //static class function
@@ -37,27 +37,27 @@ void cTimerWrapper::AddThread(cTimerWrapper *my_timer_instance)
 // static class function
 void cTimerWrapper::RemoveTimer(cTimerWrapper *my_timer_instance)
 {
-    SDL_RemoveTimer(my_timer_instance->mTimerID);
-    my_timer_instance->mTimerID = 0;
-	my_timer_instance->mAbort = true;
+	SDL_RemoveTimer(my_timer_instance->mTimerID);
+ 	my_timer_instance->mTimerID = 0;
+ 	my_timer_instance->mAbort = true;
 }
 
 // static class function
 unsigned int cTimerWrapper::timer_callback(unsigned int interval, void *pParam)
 {
-    cTimerWrapper *envoke = (cTimerWrapper *) pParam;
+	cTimerWrapper *envoke = (cTimerWrapper *) pParam;
 	if (envoke->IsExpired() || envoke->mAbort)
-    {
+	{
 		const SDL_TimerID swapId = envoke->mTimerID;
 		if (envoke->mTimerID != 0) envoke->mTimerID = 0;
 		else return 0;
 		SDL_RemoveTimer(swapId);
-        return 0;
-    }	
+        	return 0;
+	}	
 	if (envoke->mPaused) return envoke->mEventCallbackDelay;
 	envoke->EventTimer();
 
-    return envoke->mEventCallbackDelay;
+	return envoke->mEventCallbackDelay;
 }
 
 inline static Uint32 DecelerateTowardsEvent(Uint32 delayTime, int &chunkCount)
