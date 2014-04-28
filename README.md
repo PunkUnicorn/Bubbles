@@ -24,9 +24,9 @@ How to use this library:
 -- to clean it all up
 
 There is also the ability to split the workload over two threads by adding two engines, both sharing the same 
-GetCoord and CollisionReport. This means one engine can produce collision reports for half the collidable items 
-and the other engine produce the collision report for the other half. They both share the same list of what is 
-collideable. This is done using groups, and the sequence isn't much more complicated
+GetCoord and CollisionReport. This means one engine can deduce collision for half the collidable items 
+and the other engine deduces the collisions for the rest. They both share the same total list of collideable
+items. But they only process results for their half of the workload. This is done using 'engine groups', and the sequence isn't much more complicated
 
 - Init()
 - AddEngine() 
@@ -34,14 +34,16 @@ collideable. This is done using groups, and the sequence isn't much more complic
 - AddEngine() 
 -- for the second
 - AddEngineGroup() 
--- which takes an engine Id
+-- which takes an existing engine Id
 - AddEngineToGroup() 
--- to associate the other engine Id with the same group
+-- to associate the other engine Id with the group created above
 - AddBubble() 
 -- etc add to either the first engine or the second
-- StartEngine() 
--- enables the engine. Takes engine Id, CollisionReport and the frequency to check for collisions in milliseconds
+- StartEngine()
+-- to start the first engine
+- StartEngine()
+-- to start the second engine
 - AddBubble() 
--- continue to add to either the first engine or the second
+-- continue to add to either the first or second engine
 - UnInit() 
 -- to clean it all up
