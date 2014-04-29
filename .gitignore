@@ -43,8 +43,12 @@ local.properties
 
 # Build results
 
-[Dd]ebug/
-[Rr]elease/
+Bubbles/[Dd]ebug/
+Bubbles/[Rr]elease/
+Bubbles/ipch
+WinForms_CSExample/bin/[Dd]ebug/
+WinForms_CSExample/bin/[Rr]elease/
+WinForms_CSExample/obj/
 x64/
 build/
 [Bb]in/
