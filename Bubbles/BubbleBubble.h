@@ -16,7 +16,7 @@ public:
 		cBubbleBubble *ptr;
 	} PTR;
 
-	enum cAxisSplitterAXIS : int
+	enum cAxisSplitterAXIS /* -gcc : int */
 	{
 		X = 0,
 		Y,
@@ -42,9 +42,9 @@ public:
 	typedef void DistanceListUpdatedFunc(TRILATERATION_DATA**, unsigned int, COLLISION_RESULT**, unsigned int); // Note COLLISION_RESULTS** only holds those collisions deduced SO FAR. It's a collection in progress
 
 private:
-	float mRadius;
-	unsigned int mID;
 	unsigned int mEngineID;
+	unsigned int mID;
+	float mRadius;
 	bool mEtherealness;
 
 	GetCoordsFunc *mGetCoordsFunc;
@@ -60,7 +60,7 @@ public:
 
 	inline void FactorySetRadius(float radius) { mRadius = radius; };
 	inline void FactorySetID(unsigned int id) { mID = id; };
-	inline bool FactorySetEtherealness(bool etherealness) { mEtherealness = etherealness; };
+	inline void FactorySetEtherealness(bool etherealness) { mEtherealness = etherealness; };
 
 	inline bool GetEtherealness() const { return mEtherealness; };
 	inline float GetRadius() const { return mRadius; };
