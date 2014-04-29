@@ -29,12 +29,12 @@ extern "C" DLL_PUBLIC bool STDCALL Init(void)
 
 class StopEngine : std::unary_function<cBubbleEngine::PTR, void>
 {
-	public:
-		inline result_type operator () (const argument_type& engine) const
-		{
-			engine.ptr->Abort();
-			delete engine.ptr;
-		};
+public:
+	inline result_type operator () (const argument_type& engine) const
+	{
+		engine.ptr->Abort();
+		delete engine.ptr;
+	};
 };
 
 extern "C" DLL_PUBLIC void STDCALL UnInit(void)
@@ -55,7 +55,7 @@ extern "C" DLL_PUBLIC unsigned int STDCALL AddEngine(void)
 
 static cBubbleEngine::PTR GetEngine(unsigned int engineId)
 {
-	if (engineId+1 > engines.size()) throw new std::bad_exception("Invalid engine ID");
+	if (engineId+1 > engines.size()) throw -1; //new std::exception("Invalid engine ID");
 	return engines[engineId];
 }
 
@@ -90,7 +90,7 @@ extern "C" DLL_PUBLIC unsigned int STDCALL GetEngineCount(void)
 
 static std::vector<unsigned int /*engine Id*/> *GetGroup(unsigned int groupId)
 {
-	if (groupId+1 > engineGroups.size()) throw new std::bad_exception("Invalid group ID");
+	if (groupId+1 > engineGroups.size()) throw -2; //new std::exception("Invalid group ID");
 	return &(engineGroups[groupId]);
 }
 

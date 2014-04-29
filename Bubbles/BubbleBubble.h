@@ -108,7 +108,7 @@ public:
 		return lhs.abs_dist < rhs.abs_dist;
 	}
 
-	inline static bool TRILATERATION_DATA_id_LessThan(TRILATERATION_DATA &lhs, TRILATERATION_DATA &rhs)
+	inline static bool TRILATERATION_DATA_id_LessThan(const TRILATERATION_DATA &lhs, const TRILATERATION_DATA &rhs)
 	{
 		return lhs.id < rhs.id;
 	}

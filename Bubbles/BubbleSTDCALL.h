@@ -6,7 +6,7 @@
 #ifdef __GNUC__
 #	define STDCALL 
 #endif
-#ifdef _MSC_VER /*visual studio version number*/
+#ifdef _MSC_VER 
 #	define STDCALL __stdcall
 #endif
 

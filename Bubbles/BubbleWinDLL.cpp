@@ -3,6 +3,8 @@
 // Author: Matthew Cocks
 // License: Attribution 4.0 International (CC BY 4.0)
 
+#if _MSC_VER
+
 #include "BubbleTrace.h"
 #include <Windows.h>
 #include <SDL.h>
@@ -63,7 +65,7 @@ BOOL APIENTRY DllMain(HANDLE hModule,
                       DWORD  ul_reason_for_call, 
                       LPVOID lpReserved)
 {
-    switch( ul_reason_for_call ) 
+	switch( ul_reason_for_call ) 
 	{
 	    case DLL_PROCESS_ATTACH:
 			break;
@@ -80,6 +82,8 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 				delete trace;
 			}
 			break;
-    }
-    return TRUE;
+    	}
+    	return TRUE;
 }
+
+#endif //*#if _MSC_VER
