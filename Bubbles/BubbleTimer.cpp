@@ -9,7 +9,7 @@
 base class to encapsulate the SDL timer
 */
 
-cTimerWrapper::cTimerWrapper(void) : mTimerID(0), mEventCallbackDelay(120), mThreadID(NULL), mAbort(false), mPaused(false) {};
+cTimerWrapper::cTimerWrapper(void) : mAbort(false), mPaused(false), mTimerID(0), mThreadID(NULL), mEventCallbackDelay(120) {};
 cTimerWrapper::~cTimerWrapper(void)
 {
 	mAbort = true;

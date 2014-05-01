@@ -102,7 +102,7 @@ copy $(TargetDir)\Bubbles.* "C:\Users\Matthew\Documents\Visual Studio 2010\Proje
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Bubble.cpp" />
-    <ClCompile Include="BubbleWinDLL.cpp" />
+    <ClCompile Include="Bubbles.cpp" />
     <ClCompile Include="BubbleTimer.cpp" />
   </ItemGroup>
   <ItemGroup>

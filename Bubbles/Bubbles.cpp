@@ -1,16 +1,17 @@
-// BubbleWinDLL.cpp
+// Bubbles.cpp
 // Copyright (c) 2014
 // Author: Matthew Cocks
 // License: Attribution 4.0 International (CC BY 4.0)
-
-#if _MSC_VER
-
 #include "BubbleTrace.h"
-#include <Windows.h>
 #include <SDL.h>
+#include <string>
+#include <iostream>
 
 #define BUILDING_DLL
 #include "BubbleDLL_PUBLIC.h"
+
+#if _MSC_VER //there is a #else
+#include <Windows.h>
 
 static cBubbleTrace *trace;
 extern "C" DLL_PUBLIC bool STDCALL InitWithTrace(int traceMode, cBubbleTrace::TraceFunc *traceFunc)
@@ -86,4 +87,21 @@ BOOL APIENTRY DllMain(HANDLE hModule,
     	return TRUE;
 }
 
-#endif //*#if _MSC_VER
+//*#if _MSC_VER
+#else
+
+int main(void)
+{
+	const std::string exit("exit");
+	std::string line;
+	std::cout << "Bubbles 3D Collision Detection Engine 0.2" << std::endl;
+	while (std::getline(std::cin, line))
+	{
+		std::cout << line << std::endl;
+		if (line == exit) break;
+	}
+
+	return 0;
+}
+
+#endif 

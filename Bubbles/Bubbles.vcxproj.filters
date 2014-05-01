@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="BubbleWinDLL.cpp" />
     <ClCompile Include="BubbleTimer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Bubble.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Bubbles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BubbleBubble.h">

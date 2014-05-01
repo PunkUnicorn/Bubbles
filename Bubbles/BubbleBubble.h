@@ -8,6 +8,11 @@
 #include <vector>
 #include "BubbleSTDCALL.h"
 
+#ifndef NULL
+#   define NULL (0x0)
+#   define IDEFINEDNULL
+#endif
+
 class cBubbleBubble
 {
 public:
@@ -123,5 +128,11 @@ static inline bool operator ==(const cBubbleBubble::PTR & p_lhs, const cBubbleBu
 {
 	return p_lhs.ptr->GetID() == p_rhs.ptr->GetID();
 }
+
+
+#ifdef IDEFINEDNULL
+#   undef IDEFINEDNULL
+#   undef NULL
+#endif
 
 #endif
