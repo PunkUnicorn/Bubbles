@@ -168,7 +168,9 @@ static bool ConAddEngine(std::string key)
     unsigned int id = AddEngine();
     std::cout << id << std::endl;
     if (engines.size() == 0)
-            groupId = AddEngineGroup(id);
+    	groupId = AddEngineGroup(id);
+    else
+    	AddEngineToGroup(groupId, id);
     
     engines[key]=id;
     return true;
