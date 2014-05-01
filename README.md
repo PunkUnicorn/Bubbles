@@ -3,7 +3,9 @@ Bubbles
 
 Collision detection engine, Bubbles
 
-This is a 3D collision detection engine. Written in C++ < 11 it uses SDL 1.2.
+This is a 3D collision detection engine. Written in C++ with the STL. It uses SDL 1.2.
+
+Developed using Visual Studio 2010 and g++ (GCC) 4.8.2
 
 It expects a unique int Id and radius for each collidable item, and then two application callbacks: 
 - One for it to ask for a game objects x, y and z coordinate given the unique Id. This is the GetCoord callback
