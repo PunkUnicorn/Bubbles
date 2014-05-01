@@ -28,7 +28,7 @@ public:
 	static const unsigned int FIVE_A_SECOND = 200;
 	static const unsigned int SIX_A_SECOND = 166;
 
-	typedef void STDCALL CollisionReportFunc(unsigned int /*group ID*/, unsigned int /*engine ID*/, cBubbleBubble::COLLISION_RESULT**, unsigned int /*size*/);
+	typedef void STDCALL CollisionReportFunc(unsigned int /*group ID*/, unsigned int /*engine ID*/, cBubbleBubble::COLLISION_RESULT*, unsigned int /*size*/);
 
 	cBubbleEngine(unsigned int ID, unsigned int reserveAmount = RESERVE_COLLISIONRESULTS) 
 		: mGroupID(0),
@@ -113,7 +113,7 @@ private:
 			if (size > 0)
 				list = &( mCollisionResults.front() );
 
-			(*mCollisionReportFunc)(mGroupID, mID, (cBubbleBubble::COLLISION_RESULT**) list, size );
+			(*mCollisionReportFunc)(mGroupID, mID, (cBubbleBubble::COLLISION_RESULT*) list, size );
 
 			break;
 		}

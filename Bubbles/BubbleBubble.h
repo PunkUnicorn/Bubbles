@@ -44,7 +44,7 @@ public:
 	} COLLISION_RESULT;
 
 	typedef void STDCALL GetCoordsFunc(unsigned int /*engineId*/, unsigned int /*bubbleId*/, float &/*X*/, float &/*Y*/, float &/*Z*/);
-	typedef void DistanceListUpdatedFunc(TRILATERATION_DATA**, unsigned int, COLLISION_RESULT**, unsigned int); // Note COLLISION_RESULTS** only holds those collisions deduced SO FAR. It's a collection in progress
+	typedef void DistanceListUpdatedFunc(TRILATERATION_DATA*, unsigned int, COLLISION_RESULT*, unsigned int); // Note COLLISION_RESULTS** only holds those collisions deduced SO FAR. It's a collection in progress
 
 private:
 	unsigned int mEngineID;
@@ -101,21 +101,23 @@ public:
 				collision_results = &(bangs.front());
 
 			(*mDistanceListUpdatedFunc)(
-				(TRILATERATION_DATA**) trilateration_list, // holds all TRILATERATION_DATA accumulated at this point, nine times out of ten this function will hold an incomplete set of data. The tenth time it will be complete
+				(TRILATERATION_DATA*) trilateration_list, // holds all TRILATERATION_DATA accumulated at this point, nine times out of ten this function will hold an incomplete set of data. The tenth time it will be complete
 				list_size, 
-				(COLLISION_RESULT**) collision_results, // note it's only the known collision results SO FAR, it's a collection in progress
+				(COLLISION_RESULT*) collision_results, // note it's only the known collision results SO FAR, it's a collection in progress
 				bangs_size );
 		}
 	}
 
 	inline static bool TRILATERATION_DATA_abs_dist_LessThan(TRILATERATION_DATA &lhs, TRILATERATION_DATA &rhs)
 	{
-		return lhs.abs_dist < rhs.abs_dist;
+		return lhs.abs_dist < rhs.abs_dist ||
+            (lhs.id == rhs.id && lhs.axis < rhs.axis /*ensure result order of X, Y, Z*/);
 	}
 
 	inline static bool TRILATERATION_DATA_id_LessThan(const TRILATERATION_DATA &lhs, const TRILATERATION_DATA &rhs)
 	{
-		return lhs.id < rhs.id;
+		return lhs.id < rhs.id || 
+            (lhs.id == rhs.id && lhs.axis < rhs.axis /*ensure result order of X, Y, Z*/);
 	}
 		
 	inline static bool TRILATERATION_DATA_id_Equals(TRILATERATION_DATA &lhs, TRILATERATION_DATA &rhs)

@@ -1,0 +1,1 @@
+g++ -o Bubbles -lSDL -Wall -I/usr/include/SDL *.cpp

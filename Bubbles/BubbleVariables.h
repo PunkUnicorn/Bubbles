@@ -6,34 +6,17 @@
 #include <map>
 #include "BubbleEngine.h"
 
-// http://www.chris.com/ascii/index.php?art=animals/birds%20%28land%29
-
 #if _MSC_VER
-#pragma message("        .---.        .-----------")
+#pragma message("        .---.         .-----------")
 #pragma message("       /     \\  __  /    ------   bubble build bird bows and greets you")
 #pragma message("      / /     \\(--)/    -----")
 #pragma message("     //////   ' \\/ `   ---")
 #pragma message("    //// / // :    : ---")
 #pragma message("   // /   /  /`    '--")
-#pragma message("  //          //..\\\\")
+#pragma message("  //          //..\\\\    ASCII Art by Daron Brewood (http://www.chris.com/ascii/index.php)")
 #pragma message("=============UU====UU====")
 #pragma message("             '//||\\\\`")
 #pragma message("               ''``")
-#endif
-
-// move art to makefile
-
-#if __GNUC__
-#pragma warning "        .---.        .-----------"))
-#pragma warning "       /     \\  __  /    ------   bubble build bird bows and greets you")
-#pragma warning "      / /     \\(--)/    -----")
-#pragma warning "     //////   ' \\/ `   ---")
-#pragma warning "    //// / // :    : ---")
-#pragma warning "    // /   /  /`    '--")
-#pragma warning "  //          //..\\\\")
-#pragma warning "=============UU====UU====")
-#pragma warning "             '//||\\\\`")
-#pragma warning "               ''``")
 #endif
 
 static std::vector<cBubbleEngine::PTR> engines;
