@@ -124,7 +124,7 @@ extern "C" void STDCALL GetCollisionReportCallback(unsigned int groupId, unsigne
     std::cerr << "{ ""collisionReport"":{" << std::endl;
 
         std::cerr << "{ ""groupId"":""" << groupId << """" << "}" << std::endl;
-        std::cerr << "{ ""engineId"":""" << groupId << """" << "}" << std::endl;
+        std::cerr << "{ ""engineId"":""" << engineId << """" << "}" << std::endl;
 
         std::cerr << "{ ""collisions"":{" << std::endl;
 	    
