@@ -33,26 +33,25 @@ private:
 	float mRadius;
 	bool mEtherealness;
 
-	GetCoordsFunc *mGetCoordsFunc; // callback
-	DistanceListUpdatedFunc *mDistanceListUpdatedFunc; // cheeky function to get a preview of all the data to be used in the collision detection
-    // note COLLISION_RESULTS** only holds those collisions deduced SO FAR. It's a collection in progress
+	GetCoordsFunc *mGetCoordsFunc;
+	DistanceListUpdatedFunc *mDistanceListUpdatedFunc;
 
-	float x, y, z;
-    bool mCached;
+	//float x, y, z;
+   //bool mCached;
 
 public:
-    inline void ClearCache(void) { mCached = false; };
-	inline void GetCollisionCenter(float &px, float &py, float &pz) 
+   //inline void ClearCache(void) { mCached = false; };
+	inline void GetCollisionCenter(float &x, float &y, float &z) 
 	{
-        if (mCached == false)
-        {
-		    (*mGetCoordsFunc)(mEngineID, mID, x, y, z);
-            mCached = true;
-        }
+        //if (mCached == false)
+        //{
+		  (*mGetCoordsFunc)(mEngineID, mID, x, y, z);
+        //    mCached = true;
+        //}
 
-        px = x;
-        py = y;
-        pz = z;
+        //px = x;
+        //py = y;
+        //pz = z;
 	};
 
 	inline void FactorySetRadius(float radius) { mRadius = radius; };
@@ -69,11 +68,11 @@ public:
 		mRadius(radius), 
 		mEtherealness(false), 
 		mGetCoordsFunc(getCoordsFunc), 
-		mDistanceListUpdatedFunc(NULL), 
-		x(0.0f), 
-		y(0.0f), 
-		z(0.0f),
-        mCached(false)
+		mDistanceListUpdatedFunc(NULL) 
+		//x(0.0f), 
+		//y(0.0f), 
+		//z(0.0f),
+      //  mCached(false)
 	{};
 
 	~cBubbleBubble(void) {};

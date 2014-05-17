@@ -36,7 +36,7 @@ extern "C" DLL_PUBLIC bool STDCALL InitWithTrace(int traceMode, TraceFunc *trace
 extern "C" DLL_PUBLIC bool STDCALL Init(void);
 extern "C" DLL_PUBLIC void STDCALL UnInit(void);
 extern "C" DLL_PUBLIC unsigned int STDCALL AddEngine(void);
-//extern "C" DLL_PUBLIC void STDCALL SetEngineTimerTrace(unsigned int engineId, TraceFunc *timerTrace);
+extern "C" DLL_PUBLIC void STDCALL SetEngineTimerTrace(unsigned int engineId, TraceFunc *timerTrace /*trace code is the duration in milliseconds*/);
 extern "C" DLL_PUBLIC unsigned int STDCALL GetEngineCount(void);
 extern "C" DLL_PUBLIC unsigned int STDCALL AddEngineGroup(unsigned int engineId);
 extern "C" DLL_PUBLIC void STDCALL AddEngineToGroup(unsigned int engineGroupId, unsigned int engineId);

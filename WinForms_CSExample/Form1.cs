@@ -46,9 +46,9 @@ namespace WinForms_CSExample
             // - Then map engines group associations
             // - THEN add the impact bubbles to respective engines
             EngineId1 = myBubbles.AddEngine();
-            //myBubbles.SetEngineTimerTrace(EngineId1, BubbleUtil.NativeTimerTraceCallback);
+            myBubbles.SetEngineTimerTrace(EngineId1, BubbleUtil.NativeTimerTraceCallback);
             EngineId2 = myBubbles.AddEngine();
-            //myBubbles.SetEngineTimerTrace(EngineId2, BubbleUtil.NativeTimerTraceCallback);
+            myBubbles.SetEngineTimerTrace(EngineId2, BubbleUtil.NativeTimerTraceCallback);
 
             EngineGroupId = myBubbles.AddEngineGroup(EngineId1);
             myBubbles.AddEngineToGroup(EngineGroupId, EngineId2);
@@ -98,11 +98,11 @@ namespace WinForms_CSExample
             if (e.Util.IsHit(found.EngineId, e.Bang.mCenterID)) return;
 
             // big breath then CrashPlayer.Play()
-            Thread.SpinWait(20);
-            CrashPlayer.Stop();
-            Thread.SpinWait(20); 
-            CrashPlayer.Play(); // hog
-            Thread.SpinWait(20);
+            //////Thread.SpinWait(20);
+            //////CrashPlayer.Stop();
+            //////Thread.SpinWait(20); 
+            //////CrashPlayer.Play(); // hog
+            //////Thread.SpinWait(20);
 
             e.Util.SetHit(found.EngineId, e.Bang.mCenterID, true);
             e.Util.SetHit(found.EngineId, e.Bang.mDistanceUnit1.id, true);

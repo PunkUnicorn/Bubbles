@@ -17,65 +17,66 @@
 namespace Bubbles
 {
 
-class cBubbleCollisionReportThreaderizer 
+class cBubbleCollisionReportThread 
 {
 private:
-    typedef struct tagREPORT_PAYLOAD
-    {
-        unsigned int groupID; 
-        unsigned int engineId; 
-        COLLISION_RESULT* list; 
-        unsigned int size;
-        CollisionReportFunc *reportFunc;
-        std::allocator<tagREPORT_PAYLOAD> *allocator;
-    } REPORT_PAYLOAD;
+   typedef struct tagREPORT_PAYLOAD
+   {
+      unsigned int groupID; 
+      unsigned int engineId; 
+      COLLISION_RESULT* list; 
+      unsigned int size;
+      CollisionReportFunc *reportFunc;
+      std::allocator<tagREPORT_PAYLOAD> *allocator;
+   } REPORT_PAYLOAD;
 
-    std::allocator<REPORT_PAYLOAD> mPayloadAllocator;
-    SDL_Thread *mThreadID;
+   std::allocator<REPORT_PAYLOAD> mPayloadAllocator;
+   SDL_Thread *mThreadID;
 
-    static int thread_function(void *p)
-    {
-        if (p == NULL) return 0;
-        REPORT_PAYLOAD &payload = *(REPORT_PAYLOAD *)p;
+   static int thread_function(void *p)
+   {
+      if (p == NULL) return 0;
+      REPORT_PAYLOAD &payload = *(REPORT_PAYLOAD *)p;
         
-        payload.reportFunc(payload.groupID, payload.engineId, payload.list, payload.size);
-        payload.allocator->deallocate(&payload, 1);
+      payload.reportFunc(payload.groupID, payload.engineId, payload.list, payload.size);
+      payload.allocator->deallocate(&payload, 1);
 
-        //                
-        //             ,\ ! /, 
-        //            -- POP --
-        //             '/ ! \' 
-        //
+      //                
+      //             ,\ ! /, 
+      //            -- POP --
+      //             '/ ! \' 
+      //
 
-        return 0;
-    };
+      return 0;
+   };
 
 public:
-    cBubbleCollisionReportThreaderizer(void) : mPayloadAllocator(), mThreadID(NULL) { };
-    void Init(void) { mThreadID = SDL_CreateThread(thread_function, NULL); };
-    static void Start(cBubbleCollisionReportThreaderizer &me, CollisionReportFunc *func, unsigned int pgroupID, unsigned int pengineId, COLLISION_RESULT* plist, unsigned int psize)
-    {
-        REPORT_PAYLOAD *p = me.mPayloadAllocator.allocate(1);
-        REPORT_PAYLOAD &payload = *p;
+   cBubbleCollisionReportThread(void) : mPayloadAllocator(), mThreadID(NULL) { };
+   void Init(void) { mThreadID = SDL_CreateThread(thread_function, NULL); };
+   static void Start(cBubbleCollisionReportThread &me, CollisionReportFunc *func, unsigned int pgroupID, unsigned int pengineId, COLLISION_RESULT* plist, unsigned int psize)
+   {
+      REPORT_PAYLOAD *p = me.mPayloadAllocator.allocate(1);
+      REPORT_PAYLOAD &payload = *p;
 
-        payload.reportFunc = func;
-        payload.groupID = pgroupID;
-        payload.engineId = pengineId;
-        payload.list = plist;
-        payload.size = psize;
+      payload.reportFunc = func;
+      payload.groupID = pgroupID;
+      payload.engineId = pengineId;
+      payload.list = plist;
+      payload.size = psize;
 
-        int threadReturnValue;
-        SDL_WaitThread(me.mThreadID, &threadReturnValue);
-        me.mThreadID = SDL_CreateThread(thread_function, p);
-    };
-    virtual ~cBubbleCollisionReportThreaderizer() { int threadReturnValue; SDL_WaitThread(mThreadID, &threadReturnValue); };
+      int threadReturnValue;
+      SDL_WaitThread(me.mThreadID, &threadReturnValue);
+      me.mThreadID = SDL_CreateThread(thread_function, p);
+   };
+   virtual ~cBubbleCollisionReportThread() { int threadReturnValue; SDL_WaitThread(mThreadID, &threadReturnValue); };
 };
 
 
 class cBubbleEngine : public cTimerWrapper
 {
 public:
-	static const unsigned int RESERVE_COLLISIONRESULTS = 200;
+	static const unsigned int RESERVE_COLLISIONRESULTS = 400;
+   typedef void STDCALL ClearCacheFunc(unsigned int groupID);
 
 	typedef struct
 	{
@@ -86,47 +87,42 @@ public:
 	static const unsigned int FIVE_A_SECOND = 200;
 	static const unsigned int SIX_A_SECOND = 166;
 
-	cBubbleEngine(unsigned int ID, unsigned int reserveAmount = RESERVE_COLLISIONRESULTS) 
-		: //mTimerTrace(NULL),
-        mGroupID(0),
-        mID(ID), 
-		mReserveAmount(reserveAmount), 
+	cBubbleEngine(unsigned int ID, GetCoordsFunc *getCoords, ClearCacheFunc *clearCache, unsigned int reserveAmount = RESERVE_COLLISIONRESULTS) 
+		: mTimerTrace(NULL),
+      mGetCoordsFunc(getCoords),
+      mClearCacheFunc(clearCache),
+      mGroupID(0),
+      mID(ID),
+		mReserveAmount(reserveAmount),
 		mFlipFlop(false),
 		mCollisionList(),
 		mCollisionListLock(),
 		mWorkList(),
-        mDistanceList(reserveAmount * 3),
-        mCollisionResults(reserveAmount),
-        mCollisionReportFunc(NULL),
-        mThreadRun() { }
+      mDistanceList(reserveAmount * 3),
+      mCollisionResults(reserveAmount),
+      mCollisionReportFunc(NULL),
+      mThreadRun() { }
 
 	inline std::vector<cBubbleBubble::PTR> &FactoryGetWorkList(void) { return mWorkList; }
-	inline std::vector<cBubbleBubble::PTR> &FactoryGetCollisionList(void) { return mCollisionList; };
+	inline std::vector<cBubbleBubble::PTR> &FactoryGetCollisionList(void) { return mCollisionList; }
 
 	inline const std::vector<cBubbleBubble::PTR> &GetWorkList(void) const { return mWorkList; };
-	inline const std::vector<cBubbleBubble::PTR> &GetCollisionList() const { return mCollisionList; };
+	inline const std::vector<cBubbleBubble::PTR> &GetCollisionList() const { return mCollisionList; }
 
-    //inline void SetTimerTraceFunc(TraceFunc *func) { mTimerTrace = func; };
-	inline void SetGroup(unsigned int groupID) { mGroupID = groupID; };
-	inline void SetPause(bool pause) { this->cTimerWrapper::SetPause(pause); };
+   inline void SetTimerTraceFunc(TraceFunc *func) { mTimerTrace = func; };
+	inline void SetGroup(unsigned int groupID) { mGroupID = groupID; }
+	inline void SetPause(bool pause) { this->cTimerWrapper::SetPause(pause); }
 	inline void Abort(void) { this->cTimerWrapper::Abort(); };
 
-	inline cMutexWrapper *GetCollisionLock(void) { return &mCollisionListLock; };
-	inline unsigned int GetID(void) const { return mID; };
+	inline cMutexWrapper *GetCollisionLock(void) { return &mCollisionListLock; }
+	inline unsigned int GetID(void) const { return mID; }
 
-	void Start(const std::vector<cBubbleBubble::PTR> &newList, CollisionReportFunc *collisionReportFunc, unsigned int interval=FIVE_A_SECOND)
+   void Start(CollisionReportFunc *collisionReportFunc, unsigned int interval=FIVE_A_SECOND)
 	{
-		if (newList.size() > 0)
-		{
-			FactoryGetWorkList().clear();
-			FactoryGetWorkList().assign(newList.begin(), newList.end());
-		}
-
-        mThreadRun.Init();
+      mThreadRun.Init();
 		mCollisionReportFunc = collisionReportFunc;
 		cTimerWrapper::FactorySetDelay(interval);
-		cTimerWrapper::AddThread(this);
-		// Milder on threads -> cTimerWrapper::AddTimer(this);
+		cTimerWrapper::AddThread(this); // Milder on threads -> cTimerWrapper::AddTimer(this);		
 	};
 
 	virtual ~cBubbleEngine(void)
@@ -135,7 +131,9 @@ public:
 	}
 
 private:
-    //TraceFunc *mTimerTrace;
+   TraceFunc *mTimerTrace;
+   GetCoordsFunc *mGetCoordsFunc;
+   ClearCacheFunc *mClearCacheFunc;
 	unsigned int mGroupID;
 	unsigned int mID;
 	unsigned int mReserveAmount;
@@ -148,7 +146,7 @@ private:
 	std::vector<TRILATERATION_DATA> mDistanceList; // results of relative distances
 	std::vector<COLLISION_RESULT> mCollisionResults; // results of found collisions
 	CollisionReportFunc *mCollisionReportFunc; // collision callback to inform of collisions
-    cBubbleCollisionReportThreaderizer mThreadRun;
+   cBubbleCollisionReportThread mThreadRun;
 
 	bool IsExpired(void) { return false; };
 
@@ -156,41 +154,35 @@ private:
 	{
 		if (mFlipFlop) return;
 		mFlipFlop = true;
-        Uint32 start = SDL_GetTicks();
+      Uint32 start = SDL_GetTicks();
 
 		// this is where collisions are deduced
 		for (cMutexWrapper::Lock lock(GetCollisionLock()) ;;)
 		{
 			mCollisionResults.clear();
-            for (int i = mWorkList.size()-1; i > -1; i--)
-                mWorkList[i].ptr->ClearCache();
 
-            for (int i = GetCollisionList().size()-1; i > -1; i--)
-                FactoryGetCollisionList()[i].ptr->ClearCache();
+         (*mClearCacheFunc)(mGroupID);
 
-            std::for_each(mWorkList.begin(), mWorkList.end(), 
-				cBubbleFindCollisions(GetCollisionList(), mDistanceList, mCollisionResults));
+         std::for_each(mWorkList.begin(), mWorkList.end(), 
+            cBubbleFindCollisions(mCollisionList, mDistanceList, mCollisionResults));
 
 			unsigned int size = mCollisionResults.size();
 			void *list = NULL;
 
 			if (size > 0)
 				list = &( mCollisionResults.front() );
-            
-			// Milder on threads -> (*mCollisionReportFunc)(mGroupID, mID, (COLLISION_RESULT*) list, size);
-            mThreadRun.Start(mThreadRun, mCollisionReportFunc, mGroupID, mID, (COLLISION_RESULT*) list, size);
+            			
+         mThreadRun.Start(mThreadRun, mCollisionReportFunc, mGroupID, mID, (COLLISION_RESULT*) list, size); // Milder on threads -> (*mCollisionReportFunc)(mGroupID, mID, (COLLISION_RESULT*) list, size);
 
-            /*if (mTimerTrace != NULL)
-            {
-                Uint32 duration = (SDL_GetTicks() - start);
-                (*mTimerTrace)(GetID(), duration);
-            }*/
+         if (mTimerTrace != NULL)
+         {
+               Uint32 duration = (SDL_GetTicks() - start);
+               (*mTimerTrace)(GetID(), duration);
+         }
 			break;
 		}
 
-        
-
-        mFlipFlop = false;
+      mFlipFlop = false;
 	};
 };
 

@@ -71,7 +71,7 @@ namespace WinForms_CSExample
         public delegate bool Init();
         public delegate void UnInit();
         public delegate uint AddEngine();
-        //public delegate void SetEngineTimerTrace(uint engineId, TimerTraceFunc timerTraceFunc);
+        public delegate void SetEngineTimerTrace(uint engineId, TimerTraceFunc timerTraceFunc);
         public delegate uint GetEngineCount();
         public delegate uint AddEngineGroup(uint engineId);
         public delegate uint AddEngineToGroup(uint engineGroupId, uint engineId);
@@ -87,7 +87,7 @@ namespace WinForms_CSExample
         public const string InitName = "Init";
         public const string UnInitName = "UnInit";
         public const string AddEngineName = "AddEngine";
-        //public const string SetEngineTimerTraceName = "SetEngineTimerTrace";
+        public const string SetEngineTimerTraceName = "SetEngineTimerTrace";
         public const string GetEngineCountName = "GetEngineCount";
         public const string AddEngineGroupName = "AddEngineGroup";
         public const string AddEngineToGroupName = "AddEngineToGroup";
@@ -197,9 +197,9 @@ namespace WinForms_CSExample
         #endregion
 
         #region public BubbleLib.SetEngineTimerTrace SetEngineTimerTrace
-        //private static BubbleLib.SetEngineTimerTrace mSetEngineTimerTrace;
-        //public BubbleLib.SetEngineTimerTrace SetEngineTimerTrace
-        //    { get { return mSetEngineTimerTrace ?? (mSetEngineTimerTrace = Native.GetFunc<BubbleLib.SetEngineTimerTrace>(mDll, BubbleLib.SetEngineTimerTraceName)); } }
+        private static BubbleLib.SetEngineTimerTrace mSetEngineTimerTrace;
+        public BubbleLib.SetEngineTimerTrace SetEngineTimerTrace
+        { get { return mSetEngineTimerTrace ?? (mSetEngineTimerTrace = Native.GetFunc<BubbleLib.SetEngineTimerTrace>(mDll, BubbleLib.SetEngineTimerTraceName)); } }
         #endregion
         
         #region public BubbleLib.GetEngineCount GetEngineCount
@@ -398,7 +398,7 @@ namespace WinForms_CSExample
 
             // mark all those items that are no longer hit
             foreach (var key in me.HitLookup.Keys.
-                                    //AsParallel().
+                                    AsParallel().
                                     Where(h => engineId == h.EngineId && bangs.Select(t => t.mCenterID).Contains(h.BubbleId) == false))
             {
                 me.HitLookup[key] = false;
@@ -407,12 +407,12 @@ namespace WinForms_CSExample
         }
         #endregion
 
-        //public static BubbleLib.TimerTraceFunc NativeTimerTraceCallback = new BubbleLib.TimerTraceFunc(TimerTraceFunc);
-        //#region public void TimerTraceFunc(uint engineId, int duration)
-        //private static void TimerTraceFunc(uint engineId, int duration)
-        //{
-        //    Trace.WriteLine(string.Format("Engine = {0}  Duration = {1} ms", engineId, duration));
-        //}
-        //#endregion
+        public static BubbleLib.TimerTraceFunc NativeTimerTraceCallback = new BubbleLib.TimerTraceFunc(TimerTraceFunc);
+        #region public void TimerTraceFunc(uint engineId, int duration)
+        private static void TimerTraceFunc(uint engineId, int duration)
+        {
+           Trace.WriteLine(string.Format("Engine = {0}  Duration = {1} ms", engineId, duration));
+        }
+        #endregion
     }
 }

@@ -11,7 +11,6 @@
 
 #define BUILDING_DLL
 #include "BubbleDLL_PUBLIC.h"
-//#include "Bubbles.h" //not needed here actually but include so to check it compiles
 
 using namespace Bubbles;
 
@@ -46,13 +45,43 @@ extern "C" DLL_PUBLIC void STDCALL UnInit(void)
 	SDL_Quit();
 }
 
+// passed to the engine so it can clear the groups bubbles X, Y and Z cached values
+extern "C" static void STDCALL ClearCache(unsigned int groupId)
+{
+   // clear the cache when the last engine of the group calls ClearCache
+   static std::map<unsigned int /*groupId*/, unsigned int /*call per group count*/> callPerGroup;
+   if (++callPerGroup[groupId] != engineGroups[groupId].size()) 
+      return;
+
+   for (std::map<unsigned int, BUBBLE_COORDS>::iterator it=bubbleCoords.begin(); it!=bubbleCoords.end(); ++it)
+      if (groupId == it->second.groupId) it->second.cached = false;
+
+   callPerGroup[groupId] = 0;
+}
+
+// passed to the engine for it to get a bubbles X, Y and Z
+extern "C" static void STDCALL GetBubbleXYZ(unsigned int engineId, unsigned int id, float &px, float &py, float &pz)
+{
+   BUBBLE_COORDS &bubbleChords = *(&(bubbleCoords[id]));
+
+   if (bubbleChords.cached == false)
+   {
+      bubbleChords.cached = true;
+		(*bubbleChords.getCoords)(engineId, id, bubbleChords.x, bubbleChords.y, bubbleChords.z);
+   }
+
+   px = bubbleChords.x;
+   py = bubbleChords.y;
+   pz = bubbleChords.z;
+}
+
 extern "C" DLL_PUBLIC unsigned int STDCALL AddEngine(void)
 {
 	unsigned int id = engines.size();
-	cBubbleEngine &engine1 = *(new cBubbleEngine(id));
-	cBubbleEngine::PTR pimp = { &engine1 };
-	engines.push_back(pimp);
-	return id;
+	cBubbleEngine *engine1 = new cBubbleEngine(id, GetBubbleXYZ, (cBubbleEngine::ClearCacheFunc *) ClearCache);
+	cBubbleEngine::PTR pimp = { engine1 };
+	engines.push_back(pimp);      
+   return id;
 }
 
 static cBubbleEngine::PTR GetEngine(unsigned int engineId)
@@ -61,11 +90,11 @@ static cBubbleEngine::PTR GetEngine(unsigned int engineId)
 	return engines[engineId];
 }
 
-//extern "C" DLL_PUBLIC void STDCALL SetEngineTimerTrace(unsigned int engineId, TraceFunc *timerTrace)
-//{
-//	cBubbleEngine::PTR found = GetEngine(engineId);
-//	found.ptr->SetTimerTraceFunc(timerTrace);
-//}
+extern "C" DLL_PUBLIC void STDCALL SetEngineTimerTrace(unsigned int engineId, TraceFunc *timerTrace)
+{
+	cBubbleEngine::PTR found = GetEngine(engineId);
+	found.ptr->SetTimerTraceFunc(timerTrace);
+}
 
 extern "C" DLL_PUBLIC unsigned int STDCALL AddEngineGroup(unsigned int engineId)
 {
@@ -109,7 +138,7 @@ static std::vector<unsigned int /*engine Id*/> *GetEngineGroup(unsigned int engi
 		? NULL : &( engineGroups[(unsigned int)( engineToGroup[engineId] )] );
 }
 
-extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int bubbleId, float radius, GetCoordsFunc *fptr)
+extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int bubbleId, float radius, GetCoordsFunc *getCoords)
 {
 	cBubbleEngine::PTR found = GetEngine(engineId);
 
@@ -120,8 +149,11 @@ extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int
 
 	for (cMutexWrapper::Lock lock(found.ptr->GetCollisionLock()) ;;)
 	{
-		GetCoordsFunc *getCoords = (GetCoordsFunc*)fptr;
-		cBubbleBubble *newOne = new cBubbleBubble(engineId, bubbleId, radius, getCoords);
+      BUBBLE_COORDS &bubbleChords = *(&(bubbleCoords[bubbleId]));
+
+      bubbleChords.getCoords = getCoords;
+      bubbleChords.cached = false;
+		cBubbleBubble *newOne = new cBubbleBubble(engineId, bubbleId, radius, GetBubbleXYZ);
 
 		cBubbleBubble::PTR pimp = { newOne };
 
@@ -153,7 +185,7 @@ extern "C" DLL_PUBLIC unsigned int STDCALL GetBubbleCount(unsigned int engineId)
 extern "C" DLL_PUBLIC void STDCALL StartEngine(unsigned int engineId, CollisionReportFunc *callback, unsigned int intervalMS) 
 {
 	cBubbleEngine::PTR found = GetEngine(engineId);
-	found.ptr->Start(found.ptr->GetCollisionList(), callback, intervalMS);
+	found.ptr->Start(/*found.ptr->GetCollisionList(), */callback, intervalMS);
 }
 
 extern "C" DLL_PUBLIC void STDCALL PauseEngine(unsigned int engineId, bool pause)

@@ -36,7 +36,7 @@ extern "C" void STDCALL TimerTrace(int duration)
     }
 }
 
-extern "C" void STDCALL GetCoordsCallback(unsigned int engineId, unsigned int bubbleId, float &X, float &Y, float &Z)
+extern "C" static void STDCALL ConsoleGetCoordsCallback(unsigned int engineId, unsigned int bubbleId, float &X, float &Y, float &Z)
 {
     X=+(float)bubbleId;
     Y=+(float)bubbleId;
@@ -60,7 +60,7 @@ extern "C" void STDCALL GetCoordsCallback(unsigned int engineId, unsigned int bu
     }
 }
 
-extern "C" void STDCALL GetCollisionReportCallback(unsigned int groupId, unsigned int engineId, COLLISION_RESULT* collisions, unsigned int size)
+extern "C" static void STDCALL ConsoleGetCollisionReportCallback(unsigned int groupId, unsigned int engineId, COLLISION_RESULT* collisions, unsigned int size)
 {
     if (size == 0) return;
 
@@ -105,7 +105,7 @@ static bool ConAddBubble(std::string engineKey, float radius)
     const static std::string fail(" fail");
 
     unsigned int id = (unsigned int)bubbles.size()+1;
-    std::cout << id << (AddBubble(engines[engineKey], id, radius, GetCoordsCallback) ? winning : fail) << std::endl;
+    std::cout << id << (AddBubble(engines[engineKey], id, radius, ConsoleGetCoordsCallback) ? winning : fail) << std::endl;
     bubbles.push_back(id);
     return true;
 }
@@ -121,7 +121,7 @@ static bool ConAddEngine(std::string key)
 }
 static bool ConStartEngine(std::string key, unsigned int intervalMS)
 {
-    StartEngine(engines[key], GetCollisionReportCallback, intervalMS);
+    StartEngine(engines[key], ConsoleGetCollisionReportCallback, intervalMS);
     std::cout << "started" << std::endl;
     return true;
 }

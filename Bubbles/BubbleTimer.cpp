@@ -85,15 +85,15 @@ int cTimerWrapper::thread_function(void *data)
 			continue;
 		}
 
-        if (timer->mEventCallbackDelay != 0)
-        {
-		    while ((SDL_GetTicks() - startTime) < timer->mEventCallbackDelay) 
-		    {
-    			SDL_Delay(delayTime);
-			    delayTime = DecelerateTowardsEvent(delayTime);
-		    }
-		    if (timer->mPaused || timer->IsExpired() || timer->mAbort) continue;
-        }
+      if (timer->mEventCallbackDelay != 0)
+      {
+		   while ((SDL_GetTicks() - startTime) < timer->mEventCallbackDelay) 
+		   {
+    		   SDL_Delay(delayTime);
+			   delayTime = DecelerateTowardsEvent(delayTime);
+		   }
+		   if (timer->mPaused || timer->IsExpired() || timer->mAbort) continue;
+      }
 		timer->EventTimer();
 
 		startTime = SDL_GetTicks();

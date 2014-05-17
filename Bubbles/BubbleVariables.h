@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include "BubbleEngine.h"
+#include "Bubbles.h"
 
 namespace Bubbles 
 {
@@ -22,9 +23,20 @@ namespace Bubbles
 #pragma message("               ''``")
 #endif
 
+typedef struct 
+{
+   unsigned int groupId;
+   float x;
+   float y;
+   float z;
+   bool cached;
+   GetCoordsFunc *getCoords;
+} BUBBLE_COORDS;
+
 static std::vector<cBubbleEngine::PTR> engines;
 static std::map<unsigned int /*engineGroupId*/, std::vector<unsigned int /*engineId*/> > engineGroups;
 static std::map<unsigned int /*engineId*/, unsigned int /*engineGroupId*/> engineToGroup;
+static std::map<unsigned int /*bubbleId*/, BUBBLE_COORDS> bubbleCoords;
 
 }
 
