@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace WinForms_CSExample
 {
@@ -62,11 +64,14 @@ namespace WinForms_CSExample
 
     public class BubbleLib
     {
+        public delegate void TimerTraceFunc(uint engineId, int duration);
         public delegate void GetCoordsFunc(uint engineId, uint id, ref float x, ref float y, ref float z);
-        public delegate void CollisionReportFunc(uint groupId, uint engineId, IntPtr arrayPtr, uint size);       
+        public delegate void CollisionReportFunc(uint groupId, uint engineId, IntPtr arrayPtr, uint size);
+ 
         public delegate bool Init();
         public delegate void UnInit();
         public delegate uint AddEngine();
+        //public delegate void SetEngineTimerTrace(uint engineId, TimerTraceFunc timerTraceFunc);
         public delegate uint GetEngineCount();
         public delegate uint AddEngineGroup(uint engineId);
         public delegate uint AddEngineToGroup(uint engineGroupId, uint engineId);
@@ -82,6 +87,7 @@ namespace WinForms_CSExample
         public const string InitName = "Init";
         public const string UnInitName = "UnInit";
         public const string AddEngineName = "AddEngine";
+        //public const string SetEngineTimerTraceName = "SetEngineTimerTrace";
         public const string GetEngineCountName = "GetEngineCount";
         public const string AddEngineGroupName = "AddEngineGroup";
         public const string AddEngineToGroupName = "AddEngineToGroup";
@@ -162,11 +168,10 @@ namespace WinForms_CSExample
         #endregion
 
         /// <summary>
-        /// Used to build a compound key of GroupId, EngineId and BubbleId
+        /// Used to build a compound key of EngineId and BubbleId
         /// </summary>
         public struct EngineBubbleKey
         {
-            //public uint GroupId;
             public uint EngineId;
             public uint BubbleId;
         }
@@ -191,6 +196,12 @@ namespace WinForms_CSExample
             { get { return mAddEngine ?? (mAddEngine = Native.GetFunc<BubbleLib.AddEngine>(mDll, BubbleLib.AddEngineName)); } }
         #endregion
 
+        #region public BubbleLib.SetEngineTimerTrace SetEngineTimerTrace
+        //private static BubbleLib.SetEngineTimerTrace mSetEngineTimerTrace;
+        //public BubbleLib.SetEngineTimerTrace SetEngineTimerTrace
+        //    { get { return mSetEngineTimerTrace ?? (mSetEngineTimerTrace = Native.GetFunc<BubbleLib.SetEngineTimerTrace>(mDll, BubbleLib.SetEngineTimerTraceName)); } }
+        #endregion
+        
         #region public BubbleLib.GetEngineCount GetEngineCount
         private static BubbleLib.GetEngineCount mGetEngineCount;
         public BubbleLib.GetEngineCount GetEngineCount
@@ -387,13 +398,21 @@ namespace WinForms_CSExample
 
             // mark all those items that are no longer hit
             foreach (var key in me.HitLookup.Keys.
-                                    AsParallel().
-                                    Where(h => engineId == h.EngineId && bangs.Select(t => t.mCenterID).Contains(h.BubbleId) == false ))
+                                    //AsParallel().
+                                    Where(h => engineId == h.EngineId && bangs.Select(t => t.mCenterID).Contains(h.BubbleId) == false))
             {
                 me.HitLookup[key] = false;
             }
 
         }
         #endregion
+
+        //public static BubbleLib.TimerTraceFunc NativeTimerTraceCallback = new BubbleLib.TimerTraceFunc(TimerTraceFunc);
+        //#region public void TimerTraceFunc(uint engineId, int duration)
+        //private static void TimerTraceFunc(uint engineId, int duration)
+        //{
+        //    Trace.WriteLine(string.Format("Engine = {0}  Duration = {1} ms", engineId, duration));
+        //}
+        //#endregion
     }
 }

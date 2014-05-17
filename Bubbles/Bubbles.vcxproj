@@ -89,6 +89,7 @@ copy $(TargetDir)\Bubbles.* "C:\Users\Matthew\Documents\Visual Studio 2010\Proje
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BubbleConsole.h" />
     <ClInclude Include="BubbleDLL_PUBLIC.h" />
     <ClInclude Include="Bubbles.h" />
     <ClInclude Include="BubbleSTDCALL.h" />
@@ -102,6 +103,7 @@ copy $(TargetDir)\Bubbles.* "C:\Users\Matthew\Documents\Visual Studio 2010\Proje
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Bubble.cpp" />
+    <ClCompile Include="BubbleConsole.cpp" />
     <ClCompile Include="Bubbles.cpp" />
     <ClCompile Include="BubbleTimer.cpp" />
   </ItemGroup>

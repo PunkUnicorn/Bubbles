@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace WinForms_CSExample
 {
@@ -45,7 +46,9 @@ namespace WinForms_CSExample
             // - Then map engines group associations
             // - THEN add the impact bubbles to respective engines
             EngineId1 = myBubbles.AddEngine();
+            //myBubbles.SetEngineTimerTrace(EngineId1, BubbleUtil.NativeTimerTraceCallback);
             EngineId2 = myBubbles.AddEngine();
+            //myBubbles.SetEngineTimerTrace(EngineId2, BubbleUtil.NativeTimerTraceCallback);
 
             EngineGroupId = myBubbles.AddEngineGroup(EngineId1);
             myBubbles.AddEngineToGroup(EngineGroupId, EngineId2);
@@ -58,7 +61,6 @@ namespace WinForms_CSExample
             // engine2, alternating between the two. Then the collision detection work is split with each engine 
             // reporting on its bubbles, but comparing its workload over all bubbles in its engines group.
             Util.StartEngine(myBubbles, EngineId1, 200);
-            Thread.Sleep(100);
             Util.StartEngine(myBubbles, EngineId2, 200);
 
             bool paused = false;
@@ -96,11 +98,11 @@ namespace WinForms_CSExample
             if (e.Util.IsHit(found.EngineId, e.Bang.mCenterID)) return;
 
             // big breath then CrashPlayer.Play()
-            Thread.SpinWait(10);
+            Thread.SpinWait(20);
             CrashPlayer.Stop();
-            Thread.SpinWait(10); 
+            Thread.SpinWait(20); 
             CrashPlayer.Play(); // hog
-            Thread.SpinWait(10);
+            Thread.SpinWait(20);
 
             e.Util.SetHit(found.EngineId, e.Bang.mCenterID, true);
             e.Util.SetHit(found.EngineId, e.Bang.mDistanceUnit1.id, true);

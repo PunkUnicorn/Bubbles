@@ -7,6 +7,10 @@
 #define BUBBLEBUBBLE_H
 #include <vector>
 #include "BubbleSTDCALL.h"
+#include "Bubbles.h"
+
+namespace Bubbles
+{
 
 #ifndef NULL
 #   define NULL (0x0)
@@ -21,30 +25,7 @@ public:
 		cBubbleBubble *ptr;
 	} PTR;
 
-	enum cAxisSplitterAXIS /* -gcc : int */
-	{
-		X = 0,
-		Y,
-		Z,
-		NoOfDimensions
-	};
-
-	typedef struct 
-	{
-		cAxisSplitterAXIS axis; //which axis this represents either the x, y or z
-		float abs_dist; //absolute distance from id
-		float rel_coord; //value of the axis (value of x, y or z)
-		unsigned int id;
-	} TRILATERATION_DATA;
-
-	typedef struct 
-	{
-		unsigned int mCenterID;
-		cBubbleBubble::TRILATERATION_DATA mDistanceUnits[NoOfDimensions];
-	} COLLISION_RESULT;
-
-	typedef void STDCALL GetCoordsFunc(unsigned int /*engineId*/, unsigned int /*bubbleId*/, float &/*X*/, float &/*Y*/, float &/*Z*/);
-	typedef void DistanceListUpdatedFunc(TRILATERATION_DATA*, unsigned int, COLLISION_RESULT*, unsigned int); // Note COLLISION_RESULTS** only holds those collisions deduced SO FAR. It's a collection in progress
+	typedef void DistanceListUpdatedFunc(TRILATERATION_DATA*, unsigned int, COLLISION_RESULT*, unsigned int); 
 
 private:
 	unsigned int mEngineID;
@@ -52,15 +33,26 @@ private:
 	float mRadius;
 	bool mEtherealness;
 
-	GetCoordsFunc *mGetCoordsFunc;
-	DistanceListUpdatedFunc *mDistanceListUpdatedFunc; //cheeky function to get a preview of all the data to be used in the collision detection
+	GetCoordsFunc *mGetCoordsFunc; // callback
+	DistanceListUpdatedFunc *mDistanceListUpdatedFunc; // cheeky function to get a preview of all the data to be used in the collision detection
+    // note COLLISION_RESULTS** only holds those collisions deduced SO FAR. It's a collection in progress
 
 	float x, y, z;
+    bool mCached;
 
 public:
-	inline void GetCollisionCenter(float &x, float &y, float &z) 
+    inline void ClearCache(void) { mCached = false; };
+	inline void GetCollisionCenter(float &px, float &py, float &pz) 
 	{
-		(*mGetCoordsFunc)(mEngineID, mID, x, y, z);
+        if (mCached == false)
+        {
+		    (*mGetCoordsFunc)(mEngineID, mID, x, y, z);
+            mCached = true;
+        }
+
+        px = x;
+        py = y;
+        pz = z;
 	};
 
 	inline void FactorySetRadius(float radius) { mRadius = radius; };
@@ -71,16 +63,17 @@ public:
 	inline float GetRadius() const { return mRadius; };
 	inline unsigned int const GetID() const { return mID; };
 
-	cBubbleBubble(unsigned int engineId, unsigned int id, float radius, GetCoordsFunc *getCoordsFunc, bool isEthereal = false) 
+	cBubbleBubble(unsigned int engineId, unsigned int id, float radius, GetCoordsFunc *getCoordsFunc) 
 		: mEngineID(engineId), 
 		mID(id), 
 		mRadius(radius), 
-		mEtherealness(isEthereal), 
+		mEtherealness(false), 
 		mGetCoordsFunc(getCoordsFunc), 
 		mDistanceListUpdatedFunc(NULL), 
 		x(0.0f), 
 		y(0.0f), 
-		z(0.0f) 
+		z(0.0f),
+        mCached(false)
 	{};
 
 	~cBubbleBubble(void) {};
@@ -136,5 +129,7 @@ static inline bool operator ==(const cBubbleBubble::PTR & p_lhs, const cBubbleBu
 #   undef IDEFINEDNULL
 #   undef NULL
 #endif
+
+}
 
 #endif

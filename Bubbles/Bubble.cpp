@@ -11,7 +11,9 @@
 
 #define BUILDING_DLL
 #include "BubbleDLL_PUBLIC.h"
-#include "Bubbles.h" //not needed here actually but include so to check it compiles
+//#include "Bubbles.h" //not needed here actually but include so to check it compiles
+
+using namespace Bubbles;
 
 extern "C" DLL_PUBLIC bool STDCALL Init(void)
 {
@@ -55,9 +57,15 @@ extern "C" DLL_PUBLIC unsigned int STDCALL AddEngine(void)
 
 static cBubbleEngine::PTR GetEngine(unsigned int engineId)
 {
-	if (engineId+1 > engines.size()) throw -1; //new std::exception("Invalid engine ID");
+	if (engineId+1 > engines.size()) throw -1; // Invalid engine ID
 	return engines[engineId];
 }
+
+//extern "C" DLL_PUBLIC void STDCALL SetEngineTimerTrace(unsigned int engineId, TraceFunc *timerTrace)
+//{
+//	cBubbleEngine::PTR found = GetEngine(engineId);
+//	found.ptr->SetTimerTraceFunc(timerTrace);
+//}
 
 extern "C" DLL_PUBLIC unsigned int STDCALL AddEngineGroup(unsigned int engineId)
 {
@@ -90,7 +98,7 @@ extern "C" DLL_PUBLIC unsigned int STDCALL GetEngineCount(void)
 
 static std::vector<unsigned int /*engine Id*/> *GetGroup(unsigned int groupId)
 {
-	if (groupId+1 > engineGroups.size()) throw -2; //new std::exception("Invalid group ID");
+	if (groupId+1 > engineGroups.size()) throw -2; // Invalid group ID
 	return &(engineGroups[groupId]);
 }
 
@@ -101,7 +109,7 @@ static std::vector<unsigned int /*engine Id*/> *GetEngineGroup(unsigned int engi
 		? NULL : &( engineGroups[(unsigned int)( engineToGroup[engineId] )] );
 }
 
-extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int bubbleId, float radius, cBubbleBubble::GetCoordsFunc *fptr)
+extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int bubbleId, float radius, GetCoordsFunc *fptr)
 {
 	cBubbleEngine::PTR found = GetEngine(engineId);
 
@@ -112,8 +120,8 @@ extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int
 
 	for (cMutexWrapper::Lock lock(found.ptr->GetCollisionLock()) ;;)
 	{
-		cBubbleBubble::GetCoordsFunc *getCoords = (cBubbleBubble::GetCoordsFunc*)fptr;
-		cBubbleBubble *newOne = new cBubbleBubble(engineId, bubbleId, radius, getCoords, false);
+		GetCoordsFunc *getCoords = (GetCoordsFunc*)fptr;
+		cBubbleBubble *newOne = new cBubbleBubble(engineId, bubbleId, radius, getCoords);
 
 		cBubbleBubble::PTR pimp = { newOne };
 
@@ -142,7 +150,7 @@ extern "C" DLL_PUBLIC unsigned int STDCALL GetBubbleCount(unsigned int engineId)
 	return found.ptr->GetWorkList().size();
 }
 
-extern "C" DLL_PUBLIC void STDCALL StartEngine(unsigned int engineId, cBubbleEngine::CollisionReportFunc *callback, unsigned int intervalMS) 
+extern "C" DLL_PUBLIC void STDCALL StartEngine(unsigned int engineId, CollisionReportFunc *callback, unsigned int intervalMS) 
 {
 	cBubbleEngine::PTR found = GetEngine(engineId);
 	found.ptr->Start(found.ptr->GetCollisionList(), callback, intervalMS);

@@ -14,10 +14,68 @@
 #include "BubbleDimensionCracker.h"
 #include "BubbleFindCollisions.h"
 
+namespace Bubbles
+{
+
+class cBubbleCollisionReportThreaderizer 
+{
+private:
+    typedef struct tagREPORT_PAYLOAD
+    {
+        unsigned int groupID; 
+        unsigned int engineId; 
+        COLLISION_RESULT* list; 
+        unsigned int size;
+        CollisionReportFunc *reportFunc;
+        std::allocator<tagREPORT_PAYLOAD> *allocator;
+    } REPORT_PAYLOAD;
+
+    std::allocator<REPORT_PAYLOAD> mPayloadAllocator;
+    SDL_Thread *mThreadID;
+
+    static int thread_function(void *p)
+    {
+        if (p == NULL) return 0;
+        REPORT_PAYLOAD &payload = *(REPORT_PAYLOAD *)p;
+        
+        payload.reportFunc(payload.groupID, payload.engineId, payload.list, payload.size);
+        payload.allocator->deallocate(&payload, 1);
+
+        //                
+        //             ,\ ! /, 
+        //            -- POP --
+        //             '/ ! \' 
+        //
+
+        return 0;
+    };
+
+public:
+    cBubbleCollisionReportThreaderizer(void) : mPayloadAllocator(), mThreadID(NULL) { };
+    void Init(void) { mThreadID = SDL_CreateThread(thread_function, NULL); };
+    static void Start(cBubbleCollisionReportThreaderizer &me, CollisionReportFunc *func, unsigned int pgroupID, unsigned int pengineId, COLLISION_RESULT* plist, unsigned int psize)
+    {
+        REPORT_PAYLOAD *p = me.mPayloadAllocator.allocate(1);
+        REPORT_PAYLOAD &payload = *p;
+
+        payload.reportFunc = func;
+        payload.groupID = pgroupID;
+        payload.engineId = pengineId;
+        payload.list = plist;
+        payload.size = psize;
+
+        int threadReturnValue;
+        SDL_WaitThread(me.mThreadID, &threadReturnValue);
+        me.mThreadID = SDL_CreateThread(thread_function, p);
+    };
+    virtual ~cBubbleCollisionReportThreaderizer() { int threadReturnValue; SDL_WaitThread(mThreadID, &threadReturnValue); };
+};
+
+
 class cBubbleEngine : public cTimerWrapper
 {
 public:
-	static const unsigned int RESERVE_COLLISIONRESULTS = 600;
+	static const unsigned int RESERVE_COLLISIONRESULTS = 200;
 
 	typedef struct
 	{
@@ -28,10 +86,9 @@ public:
 	static const unsigned int FIVE_A_SECOND = 200;
 	static const unsigned int SIX_A_SECOND = 166;
 
-	typedef void STDCALL CollisionReportFunc(unsigned int /*group ID*/, unsigned int /*engine ID*/, cBubbleBubble::COLLISION_RESULT*, unsigned int /*size*/);
-
 	cBubbleEngine(unsigned int ID, unsigned int reserveAmount = RESERVE_COLLISIONRESULTS) 
-		: mGroupID(0),
+		: //mTimerTrace(NULL),
+        mGroupID(0),
         mID(ID), 
 		mReserveAmount(reserveAmount), 
 		mFlipFlop(false),
@@ -40,18 +97,16 @@ public:
 		mWorkList(),
         mDistanceList(reserveAmount * 3),
         mCollisionResults(reserveAmount),
-        mCollisionReportFunc(NULL)
-	{ 
-		//mDistanceList.reserve(reserveAmount * 3); 
-		//mCollisionResults.reserve(reserveAmount);
-	}
+        mCollisionReportFunc(NULL),
+        mThreadRun() { }
 
 	inline std::vector<cBubbleBubble::PTR> &FactoryGetWorkList(void) { return mWorkList; }
 	inline std::vector<cBubbleBubble::PTR> &FactoryGetCollisionList(void) { return mCollisionList; };
 
-	inline const std::vector<cBubbleBubble::PTR> &GetWorkList(void) const { return mWorkList; }; // the list of items this engine finds collisions for
-	inline const std::vector<cBubbleBubble::PTR> &GetCollisionList() const { return mCollisionList; }; // the total list of items that can be collided into
+	inline const std::vector<cBubbleBubble::PTR> &GetWorkList(void) const { return mWorkList; };
+	inline const std::vector<cBubbleBubble::PTR> &GetCollisionList() const { return mCollisionList; };
 
+    //inline void SetTimerTraceFunc(TraceFunc *func) { mTimerTrace = func; };
 	inline void SetGroup(unsigned int groupID) { mGroupID = groupID; };
 	inline void SetPause(bool pause) { this->cTimerWrapper::SetPause(pause); };
 	inline void Abort(void) { this->cTimerWrapper::Abort(); };
@@ -67,18 +122,20 @@ public:
 			FactoryGetWorkList().assign(newList.begin(), newList.end());
 		}
 
+        mThreadRun.Init();
 		mCollisionReportFunc = collisionReportFunc;
 		cTimerWrapper::FactorySetDelay(interval);
 		cTimerWrapper::AddThread(this);
 		// Milder on threads -> cTimerWrapper::AddTimer(this);
 	};
 
-	~cBubbleEngine(void)
+	virtual ~cBubbleEngine(void)
 	{
 		cTimerWrapper::RemoveTimer(this);
 	}
 
 private:
+    //TraceFunc *mTimerTrace;
 	unsigned int mGroupID;
 	unsigned int mID;
 	unsigned int mReserveAmount;
@@ -86,25 +143,32 @@ private:
 
 	std::vector<cBubbleBubble::PTR> mCollisionList; // total list of everything that can collide
 	cMutexWrapper mCollisionListLock;
-	std::vector<cBubbleBubble::PTR> mWorkList; // list of what this engine compares because work can be split over two engines
+	std::vector<cBubbleBubble::PTR> mWorkList; // list of what this engine compares and reports on, because work can be split over two engines
 
-	std::vector<cBubbleBubble::TRILATERATION_DATA> mDistanceList; // results of relative distances
-	std::vector<cBubbleBubble::COLLISION_RESULT> mCollisionResults; // results of found collisions
-	CollisionReportFunc *mCollisionReportFunc;
+	std::vector<TRILATERATION_DATA> mDistanceList; // results of relative distances
+	std::vector<COLLISION_RESULT> mCollisionResults; // results of found collisions
+	CollisionReportFunc *mCollisionReportFunc; // collision callback to inform of collisions
+    cBubbleCollisionReportThreaderizer mThreadRun;
 
-	bool /*-gcc cTimerWrapper::*/IsExpired(void) { return false; };
+	bool IsExpired(void) { return false; };
 
-	void /*-gcc cTimerWrapper::*/EventTimer(void)
+	void EventTimer(void)
 	{
-		if (mFlipFlop)
-			return;
+		if (mFlipFlop) return;
 		mFlipFlop = true;
+        Uint32 start = SDL_GetTicks();
 
 		// this is where collisions are deduced
 		for (cMutexWrapper::Lock lock(GetCollisionLock()) ;;)
 		{
 			mCollisionResults.clear();
-			std::for_each(mWorkList.begin(), mWorkList.end(), 
+            for (int i = mWorkList.size()-1; i > -1; i--)
+                mWorkList[i].ptr->ClearCache();
+
+            for (int i = GetCollisionList().size()-1; i > -1; i--)
+                FactoryGetCollisionList()[i].ptr->ClearCache();
+
+            std::for_each(mWorkList.begin(), mWorkList.end(), 
 				cBubbleFindCollisions(GetCollisionList(), mDistanceList, mCollisionResults));
 
 			unsigned int size = mCollisionResults.size();
@@ -112,13 +176,21 @@ private:
 
 			if (size > 0)
 				list = &( mCollisionResults.front() );
+            
+			// Milder on threads -> (*mCollisionReportFunc)(mGroupID, mID, (COLLISION_RESULT*) list, size);
+            mThreadRun.Start(mThreadRun, mCollisionReportFunc, mGroupID, mID, (COLLISION_RESULT*) list, size);
 
-			(*mCollisionReportFunc)(mGroupID, mID, (cBubbleBubble::COLLISION_RESULT*) list, size );
-
+            /*if (mTimerTrace != NULL)
+            {
+                Uint32 duration = (SDL_GetTicks() - start);
+                (*mTimerTrace)(GetID(), duration);
+            }*/
 			break;
 		}
 
-		mFlipFlop = false;
+        
+
+        mFlipFlop = false;
 	};
 };
 
@@ -127,4 +199,5 @@ static inline bool operator ==(const cBubbleEngine::PTR & p_lhs, const cBubbleEn
 	return p_lhs.ptr->GetID() == p_rhs.ptr->GetID();
 }
 
+}
 #endif

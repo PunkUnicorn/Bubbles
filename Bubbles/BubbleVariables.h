@@ -6,6 +6,9 @@
 #include <map>
 #include "BubbleEngine.h"
 
+namespace Bubbles 
+{
+
 #if _MSC_VER
 #pragma message("        .---.         .-----------")
 #pragma message("       /     \\  __  /    ------   bubble build bird bows and greets you")
@@ -23,5 +26,6 @@ static std::vector<cBubbleEngine::PTR> engines;
 static std::map<unsigned int /*engineGroupId*/, std::vector<unsigned int /*engineId*/> > engineGroups;
 static std::map<unsigned int /*engineId*/, unsigned int /*engineGroupId*/> engineToGroup;
 
+}
 
 #endif

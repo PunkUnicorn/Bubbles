@@ -12,10 +12,13 @@
 #include <algorithm>
 #include <map>
 
+namespace Bubbles
+{
+
 class cBubbleFindCollisions : public std::unary_function<cBubbleBubble::PTR, void> 
 {
 private:
-	class OutsideRadius : public std::binary_function<cBubbleBubble::TRILATERATION_DATA, float, bool>
+	class OutsideRadius : public std::binary_function<TRILATERATION_DATA, float, bool>
 	{
 		public:
 			inline result_type operator () (const first_argument_type& otherThing, const second_argument_type& radius) const
@@ -25,13 +28,13 @@ private:
 	};
 
 	/* take distance units and judge if a collision has been made with the given radius */
-	static void GetCollisionResults(std::vector<cBubbleBubble::COLLISION_RESULT> &results, 
-		std::vector<cBubbleBubble::TRILATERATION_DATA> &distanceList, unsigned int id, float radius)
+	static void GetCollisionResults(std::vector<COLLISION_RESULT> &results, 
+		std::vector<TRILATERATION_DATA> &distanceList, unsigned int id, float radius)
 	{
-		std::vector<cBubbleBubble::TRILATERATION_DATA>::iterator new_last = 
+		std::vector<TRILATERATION_DATA>::iterator new_last = 
 			std::remove_if(distanceList.begin(), distanceList.end(), std::bind2nd(OutsideRadius(), radius));
 
-		cBubbleBubble::COLLISION_RESULT found_result;
+		COLLISION_RESULT found_result;
 		unsigned int push_count = 0;
 		if (new_last != distanceList.begin())
 		{
@@ -43,7 +46,7 @@ private:
 						cBubbleBubble::TRILATERATION_DATA_id_LessThan);
 				
 			// find a sequence of 3 of the same ID's in a row
-			std::vector<cBubbleBubble::TRILATERATION_DATA>::iterator unit_iterator;
+			std::vector<TRILATERATION_DATA>::iterator unit_iterator;
 				
 			unsigned int last_id;
 			unsigned int id_count;
@@ -76,14 +79,14 @@ private:
 	};
 		
 	const std::vector<cBubbleBubble::PTR> &mCollisionList;
-	std::vector<cBubbleBubble::COLLISION_RESULT> &mCollisionResults;
-	std::vector<cBubbleBubble::TRILATERATION_DATA> &mDistanceList;
+	std::vector<COLLISION_RESULT> &mCollisionResults;
+	std::vector<TRILATERATION_DATA> &mDistanceList;
 
 public:
 	cBubbleFindCollisions(
 			const std::vector<cBubbleBubble::PTR> &collisionList, 
-			std::vector<cBubbleBubble::TRILATERATION_DATA> &dlist, 
-			std::vector<cBubbleBubble::COLLISION_RESULT> &results) : mCollisionList(collisionList), mCollisionResults(results), mDistanceList(dlist) {};
+			std::vector<TRILATERATION_DATA> &dlist, 
+			std::vector<COLLISION_RESULT> &results) : mCollisionList(collisionList), mCollisionResults(results), mDistanceList(dlist) {};
 
 	inline result_type operator () (const argument_type& center) const
 	{ 
@@ -95,5 +98,7 @@ public:
 		center.ptr->DistanceListUpdated(mDistanceList, mCollisionResults);
 	};
 };
+
+}
 
 #endif

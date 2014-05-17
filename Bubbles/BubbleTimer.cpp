@@ -13,7 +13,7 @@ cTimerWrapper::cTimerWrapper(void) : mAbort(false), mPaused(false), mTimerID(0),
 cTimerWrapper::~cTimerWrapper(void)
 {
 	mAbort = true;
-	if (mThreadID != NULL) //do WaitThread to accomodate SDL bug on windows http://sdl.beuc.net/sdl.wiki/SDL_CreateThread
+	if (mThreadID != NULL)
 	{
 		SDL_WaitThread(mThreadID, NULL);
 	}
@@ -52,7 +52,7 @@ unsigned int cTimerWrapper::timer_callback(unsigned int interval, void *pParam)
 		if (envoke->mTimerID != 0) envoke->mTimerID = 0;
 		else return 0;
 		SDL_RemoveTimer(swapId);
-        	return 0;
+        return 0;
 	}	
 	if (envoke->mPaused) return envoke->mEventCallbackDelay;
 	envoke->EventTimer();
@@ -60,12 +60,11 @@ unsigned int cTimerWrapper::timer_callback(unsigned int interval, void *pParam)
 	return envoke->mEventCallbackDelay;
 }
 
-inline static Uint32 DecelerateTowardsEvent(Uint32 delayTime, int &chunkCount)
+inline static Uint32 DecelerateTowardsEvent(Uint32 delayTime)
 {
 	static const int MINIMUM_DELAY = 20;
 	Uint32 newDelayTime = delayTime >> 1;
 	if (newDelayTime < MINIMUM_DELAY) newDelayTime = MINIMUM_DELAY;
-	chunkCount++;
 	return newDelayTime;
 }
 
@@ -75,8 +74,7 @@ int cTimerWrapper::thread_function(void *data)
 	cTimerWrapper *timer = (cTimerWrapper *)data;
 
 	Uint32 startTime = SDL_GetTicks();
-	int chunkCount = 0;
-	Uint32 delayTime = DecelerateTowardsEvent(timer->mEventCallbackDelay, chunkCount);
+	Uint32 delayTime = DecelerateTowardsEvent(timer->mEventCallbackDelay);
 
 	while (timer->IsExpired() == false && timer->mAbort == false)
 	{
@@ -87,17 +85,19 @@ int cTimerWrapper::thread_function(void *data)
 			continue;
 		}
 
-		while ((SDL_GetTicks() - startTime) < timer->mEventCallbackDelay) 
-		{
-			SDL_Delay(delayTime);
-			delayTime = DecelerateTowardsEvent(delayTime, chunkCount);
-		}
-		if (timer->mPaused || timer->IsExpired() || timer->mAbort) continue;
+        if (timer->mEventCallbackDelay != 0)
+        {
+		    while ((SDL_GetTicks() - startTime) < timer->mEventCallbackDelay) 
+		    {
+    			SDL_Delay(delayTime);
+			    delayTime = DecelerateTowardsEvent(delayTime);
+		    }
+		    if (timer->mPaused || timer->IsExpired() || timer->mAbort) continue;
+        }
 		timer->EventTimer();
 
-		chunkCount = 0;
 		startTime = SDL_GetTicks();
-		delayTime = DecelerateTowardsEvent(timer->mEventCallbackDelay, chunkCount);
+		delayTime = DecelerateTowardsEvent(timer->mEventCallbackDelay);
 	}
 	return 0;
 }

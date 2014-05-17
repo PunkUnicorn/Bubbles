@@ -8,6 +8,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Bubbles.cpp" />
+    <ClCompile Include="BubbleConsole.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BubbleBubble.h">
@@ -38,6 +41,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="Bubbles.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BubbleConsole.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

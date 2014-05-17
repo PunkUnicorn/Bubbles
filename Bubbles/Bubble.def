@@ -4,6 +4,7 @@ Init=_Init@0
 InitWithTrace=_InitWithTrace@8
 UnInit=_UnInit@0
 AddEngine=_AddEngine@0
+;SetEngineTimerTrace=_SetEngineTimerTrace@8
 GetEngineCount=_GetEngineCount@0
 AddEngineGroup=_AddEngineGroup@4
 AddEngineToGroup=_AddEngineToGroup@8

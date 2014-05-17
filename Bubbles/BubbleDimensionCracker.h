@@ -11,16 +11,18 @@
 #include "BubbleBubble.h"
 #include "BubbleTrace.h"
 
-/* the purpose of this class is to take a game object with an ID and
-   - find the distance for each of its dimensions: the x, y and z but for each one individually
-   - do this by the process of trilateration (subtracting distances) */
+namespace Bubbles 
+{
+
+/* The purpose of this class is to take a game object with an ID and use subtraction and the less than operator to discover distances of items from each other.
+   Find the distance for each of items x, y and z dimensions: each axis on their own individual plane taking a 3D object and reducing it to a series of 1D intersections */
 class cBubbleDimensionCracker : public std::binary_function<cBubbleBubble::PTR, cBubbleBubble::PTR, void>
 {
 private:
-	std::vector<cBubbleBubble::TRILATERATION_DATA> &mDistanceList;
+	std::vector<TRILATERATION_DATA> &mDistanceList;
 
 public:
-	cBubbleDimensionCracker(std::vector<cBubbleBubble::TRILATERATION_DATA> &data) 
+	cBubbleDimensionCracker(std::vector<TRILATERATION_DATA> &data) 
 		: mDistanceList(data)
 	{ };
 
@@ -29,10 +31,10 @@ public:
 	{
 		if (from_this_shape.ptr->GetID() == universeCenter.ptr->GetID())
 			return;
-		if (from_this_shape.ptr->GetEtherealness()) // etheral bubbles can't hit anything themselves. Other things pass through them
+		if (from_this_shape.ptr->GetEtherealness()) // etheral bubbles can't hit anything themselves. But other things register to them
 			return;
 
-		cBubbleBubble::TRILATERATION_DATA new_unit;
+		TRILATERATION_DATA new_unit;
 		new_unit.id = from_this_shape.ptr->GetID();
 
 		float from_this_shapeX, from_this_shapeY, from_this_shapeZ;
@@ -41,7 +43,7 @@ public:
 		float universeCenterX, universeCenterY, universeCenterZ;
 		universeCenter.ptr->GetCollisionCenter(universeCenterX, universeCenterY, universeCenterZ);
 
-		new_unit.axis = from_this_shape.ptr->X;
+		new_unit.axis = cAxisSplitterAXIS::X;
 		new_unit.rel_coord = from_this_shapeX - universeCenterX;
 		if (universeCenterX > from_this_shapeX)
 		{
@@ -54,7 +56,7 @@ public:
 		mDistanceList.push_back(new_unit);
 
 
-		new_unit.axis = from_this_shape.ptr->Y;
+		new_unit.axis = cAxisSplitterAXIS::Y;
 		new_unit.rel_coord = from_this_shapeY - universeCenterY;
 		if (universeCenterY > from_this_shapeY)
 		{
@@ -67,7 +69,7 @@ public:
 		mDistanceList.push_back(new_unit);
 
 
-		new_unit.axis = from_this_shape.ptr->Z;
+		new_unit.axis = cAxisSplitterAXIS::Z;
 		new_unit.rel_coord = from_this_shapeZ - universeCenterZ;
 		if (universeCenterZ > from_this_shapeZ)
 		{
@@ -80,5 +82,7 @@ public:
 		mDistanceList.push_back(new_unit);
 	};
 };
+
+}
 
 #endif
