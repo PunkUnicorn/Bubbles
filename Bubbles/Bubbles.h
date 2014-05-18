@@ -16,16 +16,16 @@ class cAxisSplitterAXIS { public: enum { X = 0, Y, Z, NoOfDimensions }; };
 
 typedef struct 
 {
-	/*cAxisSplitterAXIS*/int axis; //which axis this represents either the x, y or z
-	float abs_dist; //absolute distance from id
-	float rel_coord; //value of the axis (value of x, y or z)
-	unsigned int id;
+   /*cAxisSplitterAXIS*/int axis; //which axis this represents either the x, y or z
+   float abs_dist; //absolute distance from id
+   float rel_coord; //value of the axis (value of x, y or z)
+   unsigned int id;
 } TRILATERATION_DATA;
 
 typedef struct 
 {
-	unsigned int mCenterID;
-	TRILATERATION_DATA mDistanceUnits[cAxisSplitterAXIS::NoOfDimensions];
+   unsigned int mCenterID;
+   TRILATERATION_DATA mDistanceUnits[cAxisSplitterAXIS::NoOfDimensions];
 } COLLISION_RESULT;
 
 typedef int STDCALL TraceFunc(unsigned int /*Id*/, int /*trace code*/);

@@ -53,7 +53,7 @@ extern "C" static void STDCALL ConsoleGetCoordsCallback(unsigned int engineId, u
             std::cerr << "\t" << "{ ""bubbleId"":""" << bubbleId << """" << "}" << std::endl;
             std::cerr << "\t" << "{ ""x"":""" << X << """" << "}" << std::endl;
             std::cerr << "\t" << "{ ""y"":""" << Y << """" << "}" << std::endl;
-            std::cerr << "\t" << "{ ""z"":""" << Z << """" << "}" << std::endl;	
+            std::cerr << "\t" << "{ ""z"":""" << Z << """" << "}" << std::endl;   
 
         std::cerr << "}" << "}" << std::endl;
         break;
@@ -72,7 +72,7 @@ extern "C" static void STDCALL ConsoleGetCollisionReportCallback(unsigned int gr
             std::cerr << "{ ""engineId"":""" << groupId << """" << "}" << std::endl;
 
             std::cerr << "{ ""collisions"":{" << std::endl;
-	    
+       
             for (unsigned int i=0; i < size; i++)
             {
                 COLLISION_RESULT *oneBang = &(collisions[i]);

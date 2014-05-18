@@ -21,65 +21,65 @@ using namespace Bubbles;
 static cBubbleTrace *trace;
 extern "C" DLL_PUBLIC bool STDCALL InitWithTrace(int traceMode, TraceFunc *traceFunc)
 {
-	trace = new cBubbleTrace(traceMode, traceFunc);
-	trace->Trace(0, 9000);
-	
-	HINSTANCE sdlHinst = LoadLibrary(L"SDL.dll");
-	if (sdlHinst == NULL)
-	{
-		trace->Trace(0, 9993);
-		return false;
-	}
-	FreeLibrary(sdlHinst);
+   trace = new cBubbleTrace(traceMode, traceFunc);
+   trace->Trace(0, 9000);
+   
+   HINSTANCE sdlHinst = LoadLibrary(L"SDL.dll");
+   if (sdlHinst == NULL)
+   {
+      trace->Trace(0, 9993);
+      return false;
+   }
+   FreeLibrary(sdlHinst);
 
-	Uint32 flags = SDL_INIT_TIMER;
-	if (SDL_Init(SDL_INIT_TIMER) < 0)
-	{
-		trace->Trace(0, 9996);
-		if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
-		{
-			trace->Trace(0, 9997);
-			return false;
-		}
-	}
+   Uint32 flags = SDL_INIT_TIMER;
+   if (SDL_Init(SDL_INIT_TIMER) < 0)
+   {
+      trace->Trace(0, 9996);
+      if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
+      {
+         trace->Trace(0, 9997);
+         return false;
+      }
+   }
 
-	if (SDL_WasInit(SDL_INIT_TIMER) != SDL_INIT_TIMER)
-	{
-		trace->Trace(0, 9998);
-		SDL_Quit();
-		return false;
-	}
+   if (SDL_WasInit(SDL_INIT_TIMER) != SDL_INIT_TIMER)
+   {
+      trace->Trace(0, 9998);
+      SDL_Quit();
+      return false;
+   }
 
-	trace->Trace(0, 9999);
-	return true;
+   trace->Trace(0, 9999);
+   return true;
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule, 
                       DWORD  ul_reason_for_call, 
                       LPVOID lpReserved)
 {
-	switch( ul_reason_for_call ) 
-	{
-	    case DLL_PROCESS_ATTACH:
-			break;
+   switch( ul_reason_for_call ) 
+   {
+       case DLL_PROCESS_ATTACH:
+         break;
 
-		case DLL_THREAD_ATTACH:
-			break;
+      case DLL_THREAD_ATTACH:
+         break;
 
-		case DLL_THREAD_DETACH:
-			break;
+      case DLL_THREAD_DETACH:
+         break;
 
-		case DLL_PROCESS_DETACH:
-			if (trace != NULL)
-			{
-				delete trace;
-			}
-			break;
-    	}
-    	return TRUE;
+      case DLL_PROCESS_DETACH:
+         if (trace != NULL)
+         {
+            delete trace;
+         }
+         break;
+       }
+       return TRUE;
 }
 
-//#else //console
+#else //console
 
 int main(void)
 {
@@ -105,7 +105,7 @@ int main(void)
     std::string line;
     while (std::getline(std::cin, line))
     {
-	    if (line == exit) break;
+       if (line == exit) break;
         ProcessCommand(line);
     }
 

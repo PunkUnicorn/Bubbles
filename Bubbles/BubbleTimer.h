@@ -10,25 +10,25 @@
 class cMutexWrapper
 {
 private:
-	SDL_mutex *mMutex;
+   SDL_mutex *mMutex;
 
 public:
-	class Lock
-	{
-		private: cMutexWrapper *mMutex;
-		public: Lock(cMutexWrapper *mutex) : mMutex(mutex) { SDL_mutexP(mMutex->mMutex); }
-				~Lock(void) { SDL_mutexV(mMutex->mMutex); }
-	};
+   class Lock
+   {
+      private: cMutexWrapper *mMutex;
+      public: Lock(cMutexWrapper *mutex) : mMutex(mutex) { SDL_mutexP(mMutex->mMutex); }
+            ~Lock(void) { SDL_mutexV(mMutex->mMutex); }
+   };
 
-	cMutexWrapper(void)
-	{
-		mMutex = SDL_CreateMutex();
-	}
+   cMutexWrapper(void)
+   {
+      mMutex = SDL_CreateMutex();
+   }
 
-	virtual ~cMutexWrapper(void)
-	{
-		SDL_DestroyMutex(mMutex);
-	}		
+   virtual ~cMutexWrapper(void)
+   {
+      SDL_DestroyMutex(mMutex);
+   }      
 };
 
 /*
@@ -37,21 +37,21 @@ base class to encapsulate the SDL timer
 class cTimerWrapper
 {
 private:
-	bool mAbort;
-	bool mPaused;
+   bool mAbort;
+   bool mPaused;
     SDL_TimerID mTimerID;
-	SDL_Thread *mThreadID;
+   SDL_Thread *mThreadID;
     unsigned int mEventCallbackDelay;
 
 public:
-	void FactorySetDelay(unsigned int delay) { mEventCallbackDelay = delay; };
-	void SetPause(bool pause) 
-	{
-		if (mPaused == pause) return;
-		mPaused = pause;
-	}
+   void FactorySetDelay(unsigned int delay) { mEventCallbackDelay = delay; };
+   void SetPause(bool pause) 
+   {
+      if (mPaused == pause) return;
+      mPaused = pause;
+   }
 
-	void Abort(void) { mAbort = true; }
+   void Abort(void) { mAbort = true; }
 
     virtual void EventTimer(void) = 0;
     virtual bool IsExpired(void) = 0;

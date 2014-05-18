@@ -19,68 +19,68 @@ namespace Bubbles
 class cBubbleDimensionCracker : public std::binary_function<cBubbleBubble::PTR, cBubbleBubble::PTR, void>
 {
 private:
-	std::vector<TRILATERATION_DATA> &mDistanceList;
+   std::vector<TRILATERATION_DATA> &mDistanceList;
 
 public:
-	cBubbleDimensionCracker(std::vector<TRILATERATION_DATA> &data) 
-		: mDistanceList(data)
-	{ };
+   cBubbleDimensionCracker(std::vector<TRILATERATION_DATA> &data) 
+      : mDistanceList(data)
+   { };
 
-	/* find the distance units from 'me' to everything else in the universe  */
-	inline result_type operator () (const first_argument_type &universeCenter, const second_argument_type &from_this_shape) const
-	{
-		if (from_this_shape.ptr->GetID() == universeCenter.ptr->GetID())
-			return;
-		if (from_this_shape.ptr->GetEtherealness()) // etheral bubbles can't hit anything themselves. But other things register to them
-			return;
+   /* find the distance units from 'me' to everything else in the universe  */
+   inline result_type operator () (const first_argument_type &universeCenter, const second_argument_type &from_this_shape) const
+   {
+      if (from_this_shape.ptr->GetID() == universeCenter.ptr->GetID())
+         return;
+      if (from_this_shape.ptr->GetEtherealness()) // etheral bubbles can't hit anything themselves. But other things register to them
+         return;
 
-		TRILATERATION_DATA new_unit;
-		new_unit.id = from_this_shape.ptr->GetID();
+      TRILATERATION_DATA new_unit;
+      new_unit.id = from_this_shape.ptr->GetID();
 
-		float from_this_shapeX, from_this_shapeY, from_this_shapeZ;
-		from_this_shape.ptr->GetCollisionCenter(from_this_shapeX, from_this_shapeY, from_this_shapeZ);
+      float from_this_shapeX, from_this_shapeY, from_this_shapeZ;
+      from_this_shape.ptr->GetCollisionCenter(from_this_shapeX, from_this_shapeY, from_this_shapeZ);
 
-		float universeCenterX, universeCenterY, universeCenterZ;
-		universeCenter.ptr->GetCollisionCenter(universeCenterX, universeCenterY, universeCenterZ);
+      float universeCenterX, universeCenterY, universeCenterZ;
+      universeCenter.ptr->GetCollisionCenter(universeCenterX, universeCenterY, universeCenterZ);
 
-		new_unit.axis = cAxisSplitterAXIS::X;
-		new_unit.rel_coord = from_this_shapeX - universeCenterX;
-		if (universeCenterX > from_this_shapeX)
-		{
-			new_unit.abs_dist = universeCenterX - from_this_shapeX;
-		}
-		else
-		{
-			new_unit.abs_dist = from_this_shapeX - universeCenterX;
-		}
-		mDistanceList.push_back(new_unit);
-
-
-		new_unit.axis = cAxisSplitterAXIS::Y;
-		new_unit.rel_coord = from_this_shapeY - universeCenterY;
-		if (universeCenterY > from_this_shapeY)
-		{
-			new_unit.abs_dist = universeCenterY - from_this_shapeY;
-		}
-		else
-		{
-			new_unit.abs_dist = from_this_shapeY - universeCenterY;
-		}
-		mDistanceList.push_back(new_unit);
+      new_unit.axis = cAxisSplitterAXIS::X;
+      new_unit.rel_coord = from_this_shapeX - universeCenterX;
+      if (universeCenterX > from_this_shapeX)
+      {
+         new_unit.abs_dist = universeCenterX - from_this_shapeX;
+      }
+      else
+      {
+         new_unit.abs_dist = from_this_shapeX - universeCenterX;
+      }
+      mDistanceList.push_back(new_unit);
 
 
-		new_unit.axis = cAxisSplitterAXIS::Z;
-		new_unit.rel_coord = from_this_shapeZ - universeCenterZ;
-		if (universeCenterZ > from_this_shapeZ)
-		{
-			new_unit.abs_dist = universeCenterZ - from_this_shapeZ;
-		}
-		else
-		{
-			new_unit.abs_dist = from_this_shapeZ - universeCenterZ;
-		}
-		mDistanceList.push_back(new_unit);
-	};
+      new_unit.axis = cAxisSplitterAXIS::Y;
+      new_unit.rel_coord = from_this_shapeY - universeCenterY;
+      if (universeCenterY > from_this_shapeY)
+      {
+         new_unit.abs_dist = universeCenterY - from_this_shapeY;
+      }
+      else
+      {
+         new_unit.abs_dist = from_this_shapeY - universeCenterY;
+      }
+      mDistanceList.push_back(new_unit);
+
+
+      new_unit.axis = cAxisSplitterAXIS::Z;
+      new_unit.rel_coord = from_this_shapeZ - universeCenterZ;
+      if (universeCenterZ > from_this_shapeZ)
+      {
+         new_unit.abs_dist = universeCenterZ - from_this_shapeZ;
+      }
+      else
+      {
+         new_unit.abs_dist = from_this_shapeZ - universeCenterZ;
+      }
+      mDistanceList.push_back(new_unit);
+   };
 };
 
 }
