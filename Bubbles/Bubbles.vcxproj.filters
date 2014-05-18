@@ -46,6 +46,9 @@
     <ClInclude Include="BubbleConsole.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="BubbleCollisionReportThread.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Bubble.def" />

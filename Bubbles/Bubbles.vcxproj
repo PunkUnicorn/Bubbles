@@ -92,6 +92,7 @@ copy $(TargetDir)\Bubbles.* "C:\Users\Matthew\Documents\Visual Studio 2010\Proje
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BubbleCollisionReportThread.h" />
     <ClInclude Include="BubbleConsole.h" />
     <ClInclude Include="BubbleDLL_PUBLIC.h" />
     <ClInclude Include="Bubbles.h" />
