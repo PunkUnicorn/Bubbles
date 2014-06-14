@@ -68,8 +68,8 @@ namespace WinForms_CSExample
         public delegate void GetCoordsFunc(uint engineId, uint id, ref float x, ref float y, ref float z);
         public delegate void CollisionReportFunc(uint groupId, uint engineId, IntPtr arrayPtr, uint size);
  
-        public delegate bool Init();
-        public delegate void UnInit();
+        public delegate bool InitBubbles();
+        public delegate void UnInitBubbles();
         public delegate uint AddEngine();
         public delegate void SetEngineTimerTrace(uint engineId, TimerTraceFunc timerTraceFunc);
         public delegate uint GetEngineCount();
@@ -77,6 +77,8 @@ namespace WinForms_CSExample
         public delegate uint AddEngineToGroup(uint engineGroupId, uint engineId);
         public delegate uint GetGroupCount();
         public delegate bool AddBubble(uint engineId, uint id, float radius, GetCoordsFunc getCoordsFunc);
+        // Etheral bubbles are be hit by things but don't register as a hit to the other thing
+        public delegate bool SetEtheralness(uint bubbleId, bool etheralness);
         public delegate uint GetBubbleCount(uint engineId);
         public delegate void StartEngine(uint engineId, CollisionReportFunc reportFunc, uint intervalMS);
         public delegate void PauseEngine(uint engineId, bool pause);
@@ -84,8 +86,8 @@ namespace WinForms_CSExample
 
         public const string DllName = "Bubbles.dll";
 
-        public const string InitName = "Init";
-        public const string UnInitName = "UnInit";
+        public const string InitBubblesName = "InitBubbles";
+        public const string UnInitBubblesName = "UnInitBubbles";
         public const string AddEngineName = "AddEngine";
         public const string SetEngineTimerTraceName = "SetEngineTimerTrace";
         public const string GetEngineCountName = "GetEngineCount";
@@ -93,6 +95,7 @@ namespace WinForms_CSExample
         public const string AddEngineToGroupName = "AddEngineToGroup";
         public const string GetGroupCountName = "GetGroupCount";
         public const string AddBubbleName = "AddBubble";
+        public const string SetEtheralnessName = "SetEtheralness";
         public const string GetBubbleCountName = "GetBubbleCount";
         public const string StartEngineName = "StartEngine";
         public const string PauseEngineName = "PauseEngine";
@@ -134,13 +137,13 @@ namespace WinForms_CSExample
         private IntPtr mDll = Native.LoadLibrary(BubbleLib.DllName);
         public void Dispose()
         {
-            UnInit();
+            UnInitBubbles();
             bool result = Native.FreeLibrary(mDll);
         }
 
         public Bubbles()
         {
-            Init();
+            InitBubbles();
         }
         
         /// <summary>
@@ -178,16 +181,16 @@ namespace WinForms_CSExample
 
         public static EngineBubbleKey MakeKey(uint engineId, uint id) { return new EngineBubbleKey() { EngineId = engineId, BubbleId = id }; } //(ulong)engineId << 32 | id; }
 
-        #region private BubbleLib.Init Init
-        private static BubbleLib.Init mInit;
-        private BubbleLib.Init Init
-            { get { return mInit ?? (mInit = Native.GetFunc<BubbleLib.Init>(mDll, BubbleLib.InitName)); } }
+        #region private BubbleLib.InitBubbles InitBubbles
+        private static BubbleLib.InitBubbles mInitBubbles;
+        private BubbleLib.InitBubbles InitBubbles
+            { get { return mInitBubbles ?? (mInitBubbles = Native.GetFunc<BubbleLib.InitBubbles>(mDll, BubbleLib.InitBubblesName)); } }
         #endregion
 
-        #region private BubbleLib.UnInit UnInit
-        private static BubbleLib.UnInit mUnInit;
-        private BubbleLib.UnInit UnInit
-            { get { return mUnInit ?? (mUnInit = Native.GetFunc<BubbleLib.UnInit>(mDll, BubbleLib.UnInitName)); } }
+        #region private BubbleLib.UnInit UnInitBubbles
+        private static BubbleLib.UnInitBubbles mUnInitBubbles;
+        private BubbleLib.UnInitBubbles UnInitBubbles
+        { get { return mUnInitBubbles ?? (mUnInitBubbles = Native.GetFunc<BubbleLib.UnInitBubbles>(mDll, BubbleLib.UnInitBubblesName)); } }
         #endregion
 
         #region public BubbleLib.AddEngine AddEngine
@@ -248,6 +251,11 @@ namespace WinForms_CSExample
         private static BubbleLib.AddBubble mAddBubble;
         private BubbleLib.AddBubble AddBubbleNative
             { get { return mAddBubble ?? (mAddBubble = Native.GetFunc<BubbleLib.AddBubble>(mDll, BubbleLib.AddBubbleName)); } }
+        #endregion
+        #region public BubbleLib.SetEtheralness SetEtheralness
+        private static BubbleLib.SetEtheralness mSetEtheralness;
+        public BubbleLib.SetEtheralness SetEtheralness
+            { get { return mSetEtheralness ?? (mSetEtheralness = Native.GetFunc<BubbleLib.SetEtheralness>(mDll, BubbleLib.SetEtheralnessName)); } }
         #endregion
         #region public BubbleLib.GetBubbleCount GetBubbleCount
         private static BubbleLib.GetBubbleCount mGetBubbleCount;

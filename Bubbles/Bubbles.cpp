@@ -2,6 +2,7 @@
 // Copyright (c) 2014
 // Author: Matthew Cocks
 // License: Attribution 4.0 International (CC BY 4.0)
+#define BUILDING_DLL
 #include "BubbleTrace.h"
 #include "BubbleConsole.h"
 #include <SDL.h>
@@ -9,7 +10,6 @@
 #include <iostream>
 #include "BubbleSTDCALL.h"
 
-#define BUILDING_DLL
 #include "BubbleDLL_PUBLIC.h"
 #include "Bubbles.h"
 
@@ -18,16 +18,14 @@
 
 using namespace Bubbles;
 
-static cBubbleTrace *trace;
 extern "C" DLL_PUBLIC bool STDCALL InitWithTrace(int traceMode, TraceFunc *traceFunc)
 {
-   trace = new cBubbleTrace(traceMode, traceFunc);
-   trace->Trace(0, 9000);
+   traceFunc(0, 9000);
    
    HINSTANCE sdlHinst = LoadLibrary(L"SDL.dll");
    if (sdlHinst == NULL)
    {
-      trace->Trace(0, 9993);
+      traceFunc(0, 9993);
       return false;
    }
    FreeLibrary(sdlHinst);
@@ -35,22 +33,22 @@ extern "C" DLL_PUBLIC bool STDCALL InitWithTrace(int traceMode, TraceFunc *trace
    Uint32 flags = SDL_INIT_TIMER;
    if (SDL_Init(SDL_INIT_TIMER) < 0)
    {
-      trace->Trace(0, 9996);
+      traceFunc(0, 9996);
       if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
       {
-         trace->Trace(0, 9997);
+         traceFunc(0, 9997);
          return false;
       }
    }
 
    if (SDL_WasInit(SDL_INIT_TIMER) != SDL_INIT_TIMER)
    {
-      trace->Trace(0, 9998);
+      traceFunc(0, 9998);
       SDL_Quit();
       return false;
    }
 
-   trace->Trace(0, 9999);
+   traceFunc(0, 9999);
    return true;
 }
 
@@ -70,10 +68,10 @@ BOOL APIENTRY DllMain(HANDLE hModule,
          break;
 
       case DLL_PROCESS_DETACH:
-         if (trace != NULL)
+         /*if (trace != NULL)
          {
             delete trace;
-         }
+         }*/
          break;
        }
        return TRUE;
@@ -83,7 +81,7 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 
 int main(void)
 {
-    Init();
+    InitBubbles();
     std::cerr << "{ ""bubblesEngine"":{" << std::endl;
 
     std::string exit;
@@ -110,7 +108,7 @@ int main(void)
     }
 
     std::cerr << "}" << "}" << std::endl;
-    UnInit();
+    UnInitBubbles();
 
     return 0;
 }

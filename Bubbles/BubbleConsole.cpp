@@ -2,6 +2,7 @@
 // Copyright (c) 2014
 // Author: Matthew Cocks
 // License: Attribution 4.0 International (CC BY 4.0)
+#define BUILDING_DLL
 
 #include <vector>
 #include <map>
@@ -23,16 +24,16 @@ extern "C" void STDCALL TimerTrace(int duration)
     tm timeinfo;
     localtime_s(&timeinfo, &curTime);
 
-    for (cMutexWrapper::Lock lock(&stderrLock) ;;)
+    // lock scope
     {
-        std::cerr << "{ ""duration"":{" << std::endl;
+       cMutexWrapper::Lock lock(&stderrLock) ;
+       std::cerr << "{ ""duration"":{" << std::endl;
 
-            static char buffer[256];
-            std::cerr << "\t" << "{ ""time"":""" << asctime_s(buffer, sizeof(buffer), &timeinfo) << """" << "}" << std::endl;
-            std::cerr << "\t" << "{ ""duration"":""" << duration << """" << "}" << std::endl;
+         static char buffer[256];
+         std::cerr << "\t" << "{ ""time"":""" << asctime_s(buffer, sizeof(buffer), &timeinfo) << """" << "}" << std::endl;
+         std::cerr << "\t" << "{ ""duration"":""" << duration << """" << "}" << std::endl;
 
-        std::cerr << "}" << "}" << std::endl;
-        break;
+       std::cerr << "}" << "}" << std::endl;
     }
 }
 
@@ -45,8 +46,9 @@ extern "C" static void STDCALL ConsoleGetCoordsCallback(unsigned int engineId, u
     if (X > 50) X=1;
     if (Y > 50) Y=1;
 
-    for (cMutexWrapper::Lock lock(&stderrLock) ;;)
+    // lock scope
     {
+        cMutexWrapper::Lock lock(&stderrLock) ;
         std::cerr << "{ ""getCoords"":{" << std::endl;
 
             std::cerr << "\t" << "{ ""engineId"":""" << engineId << """" << "}" << std::endl;
@@ -56,7 +58,6 @@ extern "C" static void STDCALL ConsoleGetCoordsCallback(unsigned int engineId, u
             std::cerr << "\t" << "{ ""z"":""" << Z << """" << "}" << std::endl;   
 
         std::cerr << "}" << "}" << std::endl;
-        break;
     }
 }
 
@@ -64,8 +65,9 @@ extern "C" static void STDCALL ConsoleGetCollisionReportCallback(unsigned int gr
 {
     if (size == 0) return;
 
-    for (cMutexWrapper::Lock lock(&stderrLock) ;;)
+    // lock scope
     {
+        cMutexWrapper::Lock lock(&stderrLock);
         std::cerr << "{ ""collisionReport"":{" << std::endl;
 
             std::cerr << "{ ""groupId"":""" << groupId << """" << "}" << std::endl;
@@ -92,7 +94,6 @@ extern "C" static void STDCALL ConsoleGetCollisionReportCallback(unsigned int gr
             std::cerr << "}" << "}" << std::endl;
 
         std::cerr << "}" << "}" << std::endl;
-        break;
     }
 }
 

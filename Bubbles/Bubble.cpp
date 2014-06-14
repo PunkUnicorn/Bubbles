@@ -2,49 +2,72 @@
 // Copyright (c) 2014
 // Author: Matthew Cocks
 // License: Attribution 4.0 International (CC BY 4.0)
-
+#define BUILDING_DLL
 #include "BubbleEngine.h"
 #include "BubbleVariables.h"
 #include <vector>
 #include <SDL.h>
 #include "BubbleSTDCALL.h"
 
-#define BUILDING_DLL
 #include "BubbleDLL_PUBLIC.h"
 
 using namespace Bubbles;
 
-extern "C" DLL_PUBLIC bool STDCALL Init(void)
+extern "C" DLL_PUBLIC bool STDCALL InitBubbles(void)
 {
    Uint32 flags = SDL_INIT_TIMER;
-   if (SDL_Init(flags) < 0)
-      return false;
 
    if (SDL_WasInit(0) != flags)
    {
-      SDL_Quit();
       return false;
    }
    return true;
 }
 
-class StopEngine : std::unary_function<cBubbleEngine::PTR, void>
+namespace UnInitBubblesClasses
 {
-public:
-   inline result_type operator () (const argument_type& engine) const
+   class StopEngine : std::unary_function<cBubbleEngine::PTR, void>
    {
-      engine.ptr->Abort();
-      delete engine.ptr;
+   private:
+      bool mAbort;
+   public:
+      StopEngine(bool abort) : mAbort(abort) { }
+      inline result_type operator () (const argument_type& engine) const
+      {
+         if (mAbort) engine.ptr->Abort();
+         else delete engine.ptr;
+      };
    };
-};
 
-extern "C" DLL_PUBLIC void STDCALL UnInit(void)
-{
-   std::for_each(engines.begin(), engines.end(), StopEngine());
-
-   SDL_Quit();
+   class CheckEngineState : std::unary_function<cBubbleEngine::PTR, void>
+   {
+   private:
+      bool &mAborted;
+   public:
+      CheckEngineState(bool &aborted) : mAborted(aborted) { }
+      inline result_type operator () (const argument_type& engine) const
+      {
+         mAborted = mAborted || engine.ptr->HasAborted();
+      };
+   };
 }
 
+extern "C" DLL_PUBLIC void STDCALL UnInitBubbles(void)
+{
+   std::for_each(engines.begin(), engines.end(), UnInitBubblesClasses::StopEngine(true));
+
+   bool hasAborted;
+   do 
+   {
+      hasAborted = false;
+      SDL_Delay(10);
+      std::for_each(engines.begin(), engines.end(), UnInitBubblesClasses::CheckEngineState(hasAborted));
+   }
+   while (hasAborted == false);
+   std::for_each(engines.begin(), engines.end(), UnInitBubblesClasses::StopEngine(false));
+}
+
+// this function works but is shit, click here to re-write it
 // passed to the engine so it can clear the groups bubbles X, Y and Z cached values
 extern "C" static void STDCALL ClearCache(unsigned int groupId)
 {
@@ -53,7 +76,7 @@ extern "C" static void STDCALL ClearCache(unsigned int groupId)
    if (++callPerGroup[groupId] != engineGroups[groupId].size()) 
       return;
 
-   for (std::map<unsigned int, BUBBLE_COORDS>::iterator it=bubbleCoords.begin(); it!=bubbleCoords.end(); ++it)
+   for (std::map<unsigned int, BUBBLE_COORDS>::iterator it=bubbleCoords.begin(); it != bubbleCoords.end(); ++it)
       if (groupId == it->second.groupId) it->second.cached = false;
 
    callPerGroup[groupId] = 0;
@@ -147,8 +170,9 @@ extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int
       return false;
    }
 
-   for (cMutexWrapper::Lock lock(found.ptr->GetCollisionLock()) ;;)
+   try
    {
+      cMutexWrapper::Lock lock(found.ptr->GetCollisionLock());
       BUBBLE_COORDS &bubbleChords = *(&(bubbleCoords[bubbleId]));
 
       bubbleChords.getCoords = getCoords;
@@ -164,16 +188,23 @@ extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int
       {
          // add it to its own collision list and get out of here
          found.ptr->FactoryGetCollisionList().push_back(pimp);
-         break; 
+         //break; 
       }
-
-      // add the new bubble to each engine collision list in its group
-      for (int i=enginesInGroup->size()-1; i > -1; i--)
-         GetEngine((*enginesInGroup)[i]).ptr->FactoryGetCollisionList().push_back(pimp);
-
-      break;
+      else // add the new bubble to each engine collision list in its group      
+         for (int i=enginesInGroup->size()-1; i > -1; i--)
+            GetEngine((*enginesInGroup)[i]).ptr->FactoryGetCollisionList().push_back(pimp);
+      return true;
    }
-   return true;
+   catch (...)
+   {
+      return false;
+   }
+}
+
+extern "C" DLL_PUBLIC void STDCALL SetEtheralness(unsigned int engineId, unsigned int bubbleId, bool etheralness)
+{
+    cBubbleEngine::PTR found = GetEngine(engineId);
+    found.ptr->FactoryGetBubble(bubbleId).ptr->FactorySetEtherealness(etheralness);
 }
 
 extern "C" DLL_PUBLIC unsigned int STDCALL GetBubbleCount(unsigned int engineId)
@@ -185,7 +216,7 @@ extern "C" DLL_PUBLIC unsigned int STDCALL GetBubbleCount(unsigned int engineId)
 extern "C" DLL_PUBLIC void STDCALL StartEngine(unsigned int engineId, CollisionReportFunc *callback, unsigned int intervalMS) 
 {
    cBubbleEngine::PTR found = GetEngine(engineId);
-   found.ptr->Start(/*found.ptr->GetCollisionList(), */callback, intervalMS);
+   found.ptr->Start(callback, intervalMS);
 }
 
 extern "C" DLL_PUBLIC void STDCALL PauseEngine(unsigned int engineId, bool pause)

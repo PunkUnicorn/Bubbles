@@ -81,21 +81,31 @@ private:
    const std::vector<cBubbleBubble::PTR> &mCollisionList;
    std::vector<COLLISION_RESULT> &mCollisionResults;
    std::vector<TRILATERATION_DATA> &mDistanceList;
+   bool &mAbort;
 
 public:
    cBubbleFindCollisions(
          const std::vector<cBubbleBubble::PTR> &collisionList, 
          std::vector<TRILATERATION_DATA> &dlist, 
-         std::vector<COLLISION_RESULT> &results) : mCollisionList(collisionList), mCollisionResults(results), mDistanceList(dlist) {};
+         std::vector<COLLISION_RESULT> &results,
+         bool &abort) : mCollisionList(collisionList), mCollisionResults(results), mDistanceList(dlist), mAbort(abort) {};
 
    inline result_type operator () (const argument_type& center) const
    { 
-      mDistanceList.clear();
-      std::for_each(mCollisionList.begin(), mCollisionList.end(),                   
-         std::bind1st(cBubbleDimensionCracker(mDistanceList), center));
+      try
+      {
+         if (mAbort) throw -999;
+         mDistanceList.clear();
+         std::for_each(mCollisionList.begin(), mCollisionList.end(),                   
+            std::bind1st(cBubbleDimensionCracker(mDistanceList, mAbort), center));
 
-      GetCollisionResults(mCollisionResults, mDistanceList, center.ptr->GetID(), center.ptr->GetRadius());
-      center.ptr->DistanceListUpdated(mDistanceList, mCollisionResults);
+         GetCollisionResults(mCollisionResults, mDistanceList, center.ptr->GetID(), center.ptr->GetRadius());
+         center.ptr->DistanceListUpdated(mDistanceList, mCollisionResults);
+      }
+      catch (...)
+      {
+         throw -999;
+      }
    };
 };
 

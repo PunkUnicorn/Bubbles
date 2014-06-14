@@ -1,8 +1,8 @@
 LIBRARY
 EXPORTS
-Init=_Init@0
-InitWithTrace=_InitWithTrace@8
-UnInit=_UnInit@0
+InitBubbles=_InitBubbles@0
+;InitWithTrace=_InitWithTrace@8
+UnInitBubbles=_UnInitBubbles@0
 AddEngine=_AddEngine@0
 SetEngineTimerTrace=_SetEngineTimerTrace@8
 GetEngineCount=_GetEngineCount@0
@@ -10,6 +10,7 @@ AddEngineGroup=_AddEngineGroup@4
 AddEngineToGroup=_AddEngineToGroup@8
 GetGroupCount=_GetGroupCount@0
 AddBubble=_AddBubble@16
+SetEtheralness=_SetEtheralness@12
 GetBubbleCount=_GetBubbleCount@4
 StartEngine=_StartEngine@12
 PauseEngine=_PauseEngine@8

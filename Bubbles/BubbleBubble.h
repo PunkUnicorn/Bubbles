@@ -36,22 +36,10 @@ private:
    GetCoordsFunc *mGetCoordsFunc;
    DistanceListUpdatedFunc *mDistanceListUpdatedFunc;
 
-   //float x, y, z;
-   //bool mCached;
-
 public:
-   //inline void ClearCache(void) { mCached = false; };
    inline void GetCollisionCenter(float &x, float &y, float &z) 
    {
-        //if (mCached == false)
-        //{
-        (*mGetCoordsFunc)(mEngineID, mID, x, y, z);
-        //    mCached = true;
-        //}
-
-        //px = x;
-        //py = y;
-        //pz = z;
+      (*mGetCoordsFunc)(mEngineID, mID, x, y, z);
    };
 
    inline void FactorySetRadius(float radius) { mRadius = radius; };
@@ -68,11 +56,7 @@ public:
       mRadius(radius), 
       mEtherealness(false), 
       mGetCoordsFunc(getCoordsFunc), 
-      mDistanceListUpdatedFunc(NULL) 
-      //x(0.0f), 
-      //y(0.0f), 
-      //z(0.0f),
-      //  mCached(false)
+      mDistanceListUpdatedFunc(NULL)
    {};
 
    ~cBubbleBubble(void) {};

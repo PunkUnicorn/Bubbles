@@ -20,19 +20,21 @@ class cBubbleDimensionCracker : public std::binary_function<cBubbleBubble::PTR, 
 {
 private:
    std::vector<TRILATERATION_DATA> &mDistanceList;
+   bool &mAbort;
 
 public:
-   cBubbleDimensionCracker(std::vector<TRILATERATION_DATA> &data) 
-      : mDistanceList(data)
+   cBubbleDimensionCracker(std::vector<TRILATERATION_DATA> &data, bool &abort) 
+      : mDistanceList(data), mAbort(abort)
    { };
+
 
    /* find the distance units from 'me' to everything else in the universe  */
    inline result_type operator () (const first_argument_type &universeCenter, const second_argument_type &from_this_shape) const
    {
-      if (from_this_shape.ptr->GetID() == universeCenter.ptr->GetID())
-         return;
-      if (from_this_shape.ptr->GetEtherealness()) // etheral bubbles can't hit anything themselves. But other things register to them
-         return;
+      if (mAbort) throw -999;
+      if (from_this_shape.ptr->GetID() == universeCenter.ptr->GetID()) return;
+      // etheral bubbles can't hit anything themselves. But other things register to them
+      if (from_this_shape.ptr->GetEtherealness()) return;
 
       TRILATERATION_DATA new_unit;
       new_unit.id = from_this_shape.ptr->GetID();

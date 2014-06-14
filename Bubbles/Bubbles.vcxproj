@@ -63,11 +63,17 @@
       <MapFileName>$(TargetDir)$(TargetName).map</MapFileName>
       <MapExports>true</MapExports>
       <ModuleDefinitionFile>Bubble.def</ModuleDefinitionFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <CustomBuildStep>
       <Command>echo "HELLO"
 copy $(TargetDir)\Bubbles.* "C:\Users\Matthew\Documents\Visual Studio 2010\Projects\WinForms_CSExample\bin\Debug"</Command>
     </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>md "$(OutDir)..\..\Publish" 
+md "$(OutDir)..\..\Publish\$(Configuration)"
+xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -80,6 +86,7 @@ copy $(TargetDir)\Bubbles.* "C:\Users\Matthew\Documents\Visual Studio 2010\Proje
       <AdditionalIncludeDirectories>C:\SDL-1.2.15\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -89,7 +96,13 @@ copy $(TargetDir)\Bubbles.* "C:\Users\Matthew\Documents\Visual Studio 2010\Proje
       <AdditionalLibraryDirectories>C:\SDL-1.2.15\lib\x86</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>Bubble.def</ModuleDefinitionFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
+    <PostBuildEvent>
+      <Command>md "$(OutDir)..\..\Publish" 
+md "$(OutDir)..\..\Publish\$(Configuration)"
+xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BubbleCollisionReportThread.h" />

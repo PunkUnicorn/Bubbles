@@ -46,13 +46,16 @@ void cTimerWrapper::RemoveTimer(cTimerWrapper *my_timer_instance)
 unsigned int cTimerWrapper::timer_callback(unsigned int interval, void *pParam)
 {
    cTimerWrapper *envoke = (cTimerWrapper *) pParam;
-   if (envoke->IsExpired() || envoke->mAbort)
+   if (envoke->mAbort)
    {
       const SDL_TimerID swapId = envoke->mTimerID;
-      if (envoke->mTimerID != 0) envoke->mTimerID = 0;
-      else return 0;
-      SDL_RemoveTimer(swapId);
-        return 0;
+		if (envoke->mTimerID != 0) 
+      {
+         envoke->mTimerID = 0;
+		   SDL_RemoveTimer(swapId);
+         envoke->mThisTribbleIsDead = true;
+      }
+      return 0;
    }   
    if (envoke->mPaused) return envoke->mEventCallbackDelay;
    envoke->EventTimer();
@@ -76,7 +79,7 @@ int cTimerWrapper::thread_function(void *data)
    Uint32 startTime = SDL_GetTicks();
    Uint32 delayTime = DecelerateTowardsEvent(timer->mEventCallbackDelay);
 
-   while (timer->IsExpired() == false && timer->mAbort == false)
+   while (timer->mAbort == false)
    {
       if (timer->mPaused)
       {
@@ -92,12 +95,13 @@ int cTimerWrapper::thread_function(void *data)
              SDL_Delay(delayTime);
             delayTime = DecelerateTowardsEvent(delayTime);
          }
-         if (timer->mPaused || timer->IsExpired() || timer->mAbort) continue;
+         if (timer->mAbort || timer->mPaused) continue;
       }
       timer->EventTimer();
 
       startTime = SDL_GetTicks();
       delayTime = DecelerateTowardsEvent(timer->mEventCallbackDelay);
    }
+   timer->mThisTribbleIsDead = true;
    return 0;
 }

@@ -59,6 +59,18 @@ public:
    inline void SetGroup(unsigned int groupID) { mGroupID = groupID; }
    inline void SetPause(bool pause) { this->cTimerWrapper::SetPause(pause); }
    inline void Abort(void) { this->cTimerWrapper::Abort(); };
+   inline bool HasAborted(void) { return this->cTimerWrapper::HasAborted(); }
+
+   inline cBubbleBubble::PTR FactoryGetBubble(unsigned int Id)
+   {
+      std::vector<cBubbleBubble::PTR>::iterator it = FactoryGetCollisionList().begin();
+      for (; it != FactoryGetCollisionList().end(); it++)
+      {
+         if (it->ptr->GetID() != Id) continue;
+         return *it;
+      }
+      throw 99;
+   }
 
    inline cMutexWrapper *GetCollisionLock(void) { return &mCollisionListLock; }
    inline unsigned int GetID(void) const { return mID; }
@@ -94,23 +106,26 @@ private:
    CollisionReportFunc *mCollisionReportFunc; // collision callback to inform of collisions
    cBubbleCollisionReportThread mThreadRun;
 
-   bool IsExpired(void) { return false; };
+   //bool IsExpired(void) { return false; };
 
    void EventTimer(void)
    {
       if (mFlipFlop) return;
-      mFlipFlop = true;
-      Uint32 start = SDL_GetTicks();
+      mFlipFlop = true;      
 
       // this is where collisions are deduced
-      for (cMutexWrapper::Lock lock(GetCollisionLock()) ;;)
+      try
       {
+         cMutexWrapper::Lock lock(GetCollisionLock());
+
+         Uint32 start = SDL_GetTicks();
          mCollisionResults.clear();
 
          (*mClearCacheFunc)(mGroupID);
 
+         if (this->cTimerWrapper::IsAborting()) throw -999;
          std::for_each(mWorkList.begin(), mWorkList.end(), 
-            cBubbleFindCollisions(mCollisionList, mDistanceList, mCollisionResults));
+            cBubbleFindCollisions(mCollisionList, mDistanceList, mCollisionResults, this->cTimerWrapper::mAbort));
 
          unsigned int size = mCollisionResults.size();
          void *list = NULL;
@@ -118,16 +133,19 @@ private:
          if (size > 0)
             list = &( mCollisionResults.front() );
                      
-         mThreadRun.Start(mThreadRun, mCollisionReportFunc, mGroupID, mID, (COLLISION_RESULT*) list, size); // Milder on threads -> (*mCollisionReportFunc)(mGroupID, mID, (COLLISION_RESULT*) list, size);
+         mThreadRun.Start(mThreadRun, mCollisionReportFunc, mGroupID, mID, (COLLISION_RESULT*) list, size); 
+         // Milder on threads -> (*mCollisionReportFunc)(mGroupID, mID, (COLLISION_RESULT*) list, size);
 
          if (mTimerTrace != NULL)
          {
                Uint32 duration = (SDL_GetTicks() - start);
                (*mTimerTrace)(GetID(), duration);
          }
-         break;
       }
-
+      catch (int code)
+      {
+         if (code != -999) throw;
+      }      
       mFlipFlop = false;
    };
 };
