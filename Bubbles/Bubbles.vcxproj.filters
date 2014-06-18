@@ -1,16 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="BubbleTimer.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Bubble.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Bubbles.cpp" />
     <ClCompile Include="BubbleConsole.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\Shared\TimerWrapper.cpp">
+      <Filter>Source\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="BubblesEntry.cpp" />
+    <ClCompile Include="Bubbles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BubbleBubble.h">
@@ -31,16 +29,10 @@
     <ClInclude Include="BubbleDimensionCracker.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="BubbleTimer.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="BubbleTrace.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="BubbleVariables.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Bubbles.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="BubbleConsole.h">
@@ -49,9 +41,10 @@
     <ClInclude Include="BubbleCollisionReportThread.h">
       <Filter>Headers</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Bubble.def" />
+    <ClInclude Include="..\Shared\TimerWrapper.h">
+      <Filter>Headers\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="Bubbles.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -60,5 +53,14 @@
     <Filter Include="Source">
       <UniqueIdentifier>{d782b6d8-b00e-4e9d-8aaf-74f8719d97ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\Shared">
+      <UniqueIdentifier>{7b45cdba-1c20-4ff3-afe2-8e1d358caeb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Shared">
+      <UniqueIdentifier>{d59621ba-fa44-4986-ac90-3ac1c831b73e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Bubbles.def" />
   </ItemGroup>
 </Project>

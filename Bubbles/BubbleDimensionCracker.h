@@ -40,7 +40,7 @@ public:
       new_unit.id = from_this_shape.ptr->GetID();
 
       float from_this_shapeX, from_this_shapeY, from_this_shapeZ;
-      from_this_shape.ptr->GetCollisionCenter(from_this_shapeX, from_this_shapeY, from_this_shapeZ);
+      from_this_shape.ptr->GetPreviousCenter(from_this_shapeX, from_this_shapeY, from_this_shapeZ);
 
       float universeCenterX, universeCenterY, universeCenterZ;
       universeCenter.ptr->GetCollisionCenter(universeCenterX, universeCenterY, universeCenterZ);

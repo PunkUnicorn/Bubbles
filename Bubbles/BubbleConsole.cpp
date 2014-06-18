@@ -11,10 +11,11 @@
 #include <ctime>
 #include "BubbleBubble.h"
 #include "Bubbles.h"
-#include "BubbleTimer.h"
+#include "..\Shared\TimerWrapper.h"
 #include "BubbleConsole.h"
 
 using namespace Bubbles;
+using namespace TimerWrapper;
 
 static cMutexWrapper stderrLock;
 extern "C" void STDCALL TimerTrace(int duration)

@@ -95,6 +95,7 @@ public:
       try
       {
          if (mAbort) throw -999;
+
          mDistanceList.clear();
          std::for_each(mCollisionList.begin(), mCollisionList.end(),                   
             std::bind1st(cBubbleDimensionCracker(mDistanceList, mAbort), center));
@@ -102,9 +103,9 @@ public:
          GetCollisionResults(mCollisionResults, mDistanceList, center.ptr->GetID(), center.ptr->GetRadius());
          center.ptr->DistanceListUpdated(mDistanceList, mCollisionResults);
       }
-      catch (...)
+      catch (int code)
       {
-         throw -999;
+         throw code;
       }
    };
 };

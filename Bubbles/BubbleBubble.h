@@ -8,6 +8,7 @@
 #include <vector>
 #include "BubbleSTDCALL.h"
 #include "Bubbles.h"
+#include <SDL.h>
 
 namespace Bubbles
 {
@@ -35,20 +36,33 @@ private:
 
    GetCoordsFunc *mGetCoordsFunc;
    DistanceListUpdatedFunc *mDistanceListUpdatedFunc;
+   float lastX, lastY, lastZ;
+   bool mCached;
 
-public:
+public:   
+   inline void GetPreviousCenter(float &x, float &y, float &z) 
+   {      
+      x = lastX;
+      y = lastY;
+      z = lastZ;
+   }
    inline void GetCollisionCenter(float &x, float &y, float &z) 
    {
-      (*mGetCoordsFunc)(mEngineID, mID, x, y, z);
-   };
+      if (mCached == false)      
+      {
+         (*mGetCoordsFunc)(mEngineID, mID, lastX, lastY, lastZ);
+         mCached = true;
+      }
+      GetPreviousCenter(x, y, z);      
+   }
+   inline void FactorySetRadius(float radius) { mRadius = radius; }
+   inline void FactorySetID(unsigned int id) { mID = id; }
+   inline void FactorySetEtherealness(bool etherealness) { mEtherealness = etherealness; }
 
-   inline void FactorySetRadius(float radius) { mRadius = radius; };
-   inline void FactorySetID(unsigned int id) { mID = id; };
-   inline void FactorySetEtherealness(bool etherealness) { mEtherealness = etherealness; };
-
-   inline bool GetEtherealness() const { return mEtherealness; };
+   inline bool GetEtherealness() const { return mEtherealness; }
    inline float GetRadius() const { return mRadius; };
-   inline unsigned int const GetID() const { return mID; };
+   inline unsigned int const GetID() const { return mID; }
+   inline void ClearCache(void) { mCached = false; }
 
    cBubbleBubble(unsigned int engineId, unsigned int id, float radius, GetCoordsFunc *getCoordsFunc) 
       : mEngineID(engineId), 
@@ -56,8 +70,10 @@ public:
       mRadius(radius), 
       mEtherealness(false), 
       mGetCoordsFunc(getCoordsFunc), 
-      mDistanceListUpdatedFunc(NULL)
-   {};
+      mDistanceListUpdatedFunc(NULL),
+      lastX(0.0f), lastY(0.0f), lastZ(0.0f),
+      mCached(false)
+   {}
 
    ~cBubbleBubble(void) {};
 
