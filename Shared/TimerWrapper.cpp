@@ -61,7 +61,15 @@ unsigned int cTimerWrapper::timer_callback(unsigned int interval, void *pParam)
       return 0;
    }   
    if (envoke->mPaused) return envoke->mEventCallbackDelay;
-   envoke->EventTimer();
+   try
+   {
+      envoke->EventTimer();
+   }
+   catch (...)
+   {
+      if (envoke->mAbort) throw -999;
+      throw -42;
+   }
    SDL_Delay(0);
 
    return envoke->mEventCallbackDelay;
@@ -97,16 +105,31 @@ int cTimerWrapper::thread_function(void *data)
          while ((SDL_GetTicks() - startTime) < timer->mEventCallbackDelay) 
          {
             SDL_Delay(delayTime);
+            if (timer->mAbort) break;
             delayTime = DecelerateTowardsEvent(delayTime);
          }
-         if (timer->mAbort || timer->mPaused) continue;
+         if (timer->mAbort) break;
+         if (timer->mPaused) continue;
       }
-      timer->EventTimer();
+
+      try
+      {
+         timer->EventTimer();
+      }
+      catch (...)
+      {
+         if (timer->mAbort == false) throw;
+      }
 
       startTime = SDL_GetTicks();
       delayTime = DecelerateTowardsEvent(timer->mEventCallbackDelay);
    }
-   timer->mThisTribbleIsDead = true;
+
+   try
+   {
+      timer->mThisTribbleIsDead = true;
+   }
+   catch (...) {}
    return 0;
 }
 

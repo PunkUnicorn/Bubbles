@@ -16,6 +16,7 @@ private:
    SDL_mutex *mMutex;
 
 public:
+   inline SDL_mutex *GetMutex(void) { return mMutex; }
    class Lock
    {
       private: cMutexWrapper *mMutex;

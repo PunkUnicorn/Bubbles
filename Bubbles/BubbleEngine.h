@@ -18,28 +18,15 @@
 namespace Bubbles
 {
 
-
 class cRefreshWorklistCoords : public std::unary_function<cBubbleBubble::PTR, void>
 {
 private:
    bool &mAbort;
 
 public:
-   cRefreshWorklistCoords(bool &abort) 
-      : mAbort(abort)
-   { }
-
-
-   /* find the distance units from 'me' to everything else in the universe  */
-   inline result_type operator () (const argument_type &workListItem) const
-   {
-      workListItem.ptr->ClearCache();
-      //float x, y, z;
-      //workListItem.ptr->GetCollisionCenter(x, y, z);
-   }
+   cRefreshWorklistCoords(bool &abort) : mAbort(abort) { }
+   inline result_type operator () (const argument_type &workListItem) const { workListItem.ptr->ClearCache(); } 
 };
-
-
 
 class cBubbleEngine : public TimerWrapper::cTimerWrapper
 {
@@ -63,8 +50,10 @@ public:
       mID(ID),
       mReserveAmount(),
       mFlipFlop(false),
-      mCollisionList(),
-      mCollisionListLock(),
+      mBubbleRunningLock(),
+      mBubbleRunningCond(NULL),
+      mGroupList(),
+      mListLock(),
       mWorkList(),
       mDistanceList(),
       mCollisionResults(),
@@ -79,17 +68,41 @@ public:
 
    inline void FactoryAddWorkList(cBubbleBubble::PTR &addMe) 
    { 
-      TimerWrapper::cMutexWrapper::Lock lock(GetCollisionLock());
+      TimerWrapper::cMutexWrapper::Lock lock(GetLock());
       mWorkList.push_back(addMe);
    }
-   inline void FactoryAddCollisionList(cBubbleBubble::PTR &addMe) 
+   inline void FactoryAddGroupList(cBubbleBubble::PTR &addMe) 
    { 
-      TimerWrapper::cMutexWrapper::Lock lock(GetCollisionLock());
-      mCollisionList.push_back(addMe);
+      TimerWrapper::cMutexWrapper::Lock lock(GetLock());
+      mGroupList.push_back(addMe);
+   }
+
+   inline SDL_cond *GetEngineIdleCond(void) { return mBubbleRunningCond; }
+   inline TimerWrapper::cMutexWrapper *GetEngineCycleLock(void) { return &mBubbleRunningLock; }
+
+   inline void FactoryRemove(unsigned int bubbleId)
+   {
+      TimerWrapper::cMutexWrapper::Lock lock(GetLock());
+      cBubbleBubble::PTR findMe = FactoryGetBubble(bubbleId);
+      if (findMe.ptr == NULL) return;
+
+      std::vector<cBubbleBubble::PTR>::iterator collisionListIt = std::find(mGroupList.begin(), mGroupList.end(), findMe);
+      if (collisionListIt != mGroupList.end())
+      {
+         std::swap(*collisionListIt, mGroupList.back());
+	      mGroupList.pop_back();
+      }
+
+      std::vector<cBubbleBubble::PTR>::iterator workListIt = std::find(mWorkList.begin(), mWorkList.end(), findMe);
+      if (workListIt != mWorkList.end())
+      {
+         std::swap(*workListIt, mWorkList.back());
+	      mWorkList.pop_back();
+      }
    }
 
    inline const std::vector<cBubbleBubble::PTR> &GetWorkList(void) const { return mWorkList; };
-   inline const std::vector<cBubbleBubble::PTR> &GetCollisionList() const { return mCollisionList; }
+   inline const std::vector<cBubbleBubble::PTR> &GetGroupList() const { return mGroupList; }
 
    inline void SetTimerTraceFunc(TraceFunc *func) { mTimerTrace = func; };
    inline void SetGroup(unsigned int groupID) { mGroupID = groupID; }
@@ -99,22 +112,22 @@ public:
 
    inline cBubbleBubble::PTR FactoryGetBubble(unsigned int Id)
    {
-      TimerWrapper::cMutexWrapper::Lock lock(GetCollisionLock());
-      
-      std::vector<cBubbleBubble::PTR>::iterator it = mCollisionList.begin();
-      for (; it != mCollisionList.end(); it++)
+      static cBubbleBubble::PTR dud = { NULL };
+      std::vector<cBubbleBubble::PTR>::iterator it = mGroupList.begin();
+      for (; it != mGroupList.end(); it++)
       {
          if (it->ptr->GetID() != Id) continue;
          return *it;
       }
-      throw 99;
+      return dud;
    }
 
-   inline TimerWrapper::cMutexWrapper *GetCollisionLock(void) { return &mCollisionListLock; }
+   inline TimerWrapper::cMutexWrapper *GetLock(void) { return &mListLock; }
    inline unsigned int GetID(void) const { return mID; }
 
    void Start(CollisionReportFunc *collisionReportFunc, unsigned int interval=FIVE_A_SECOND)
    {
+      mBubbleRunningCond = SDL_CreateCond();
       mThreadRun1.Init();
       mThreadRun2.Init();
       mCollisionReportFunc = collisionReportFunc;
@@ -134,9 +147,11 @@ private:
    unsigned int mID;
    unsigned int mReserveAmount;
    bool mFlipFlop;
+   TimerWrapper::cMutexWrapper mBubbleRunningLock;
+   SDL_cond *mBubbleRunningCond;
 
-   std::vector<cBubbleBubble::PTR> mCollisionList; // total list of everything that can collide
-   TimerWrapper::cMutexWrapper mCollisionListLock;
+   std::vector<cBubbleBubble::PTR> mGroupList; // total list of everything that can collide
+   TimerWrapper::cMutexWrapper mListLock;
    std::vector<cBubbleBubble::PTR> mWorkList; // list of what this engine compares and reports on, because work can be split over two engines
 
    std::vector<TRILATERATION_DATA> mDistanceList; // results of relative distances
@@ -148,39 +163,55 @@ private:
 
    void EventTimer(void)
    {
-      if (mFlipFlop) return;
-      mFlipFlop = true;        
+      EventTimerLocked();
+      SDL_CondBroadcast(mBubbleRunningCond);
+   }
+
+   void EventTimerLocked(void)
+   {
+      TimerWrapper::cMutexWrapper::Lock lock(GetEngineCycleLock());
+
+      try
+      {
+         if (mFlipFlop) return;
+         mFlipFlop = true;        
       
-      SDL_Delay(30);
-      if (this->TimerWrapper::cTimerWrapper::IsAborting()) throw -999;
+         SDL_Delay(30);
+         if (this->TimerWrapper::cTimerWrapper::IsAborting()) throw -999;
+      }
+      catch (...)
+      {
+         if (this->TimerWrapper::cTimerWrapper::IsAborting()) throw -999;
+      }
 
       // this is where collisions are deduced
       try
       {
-         TimerWrapper::cMutexWrapper::Lock lock(GetCollisionLock());
+         TimerWrapper::cMutexWrapper::Lock lock(GetLock());
 
-         Uint32 start = SDL_GetTicks();
+         Uint32 start = 0;
+         if (mTimerTrace != NULL)
+            start = SDL_GetTicks();
+
          mCollisionResults.clear();
 
          if (mClearCacheFunc != NULL)
             (*mClearCacheFunc)(mGroupID);
 
-         // Get fresh Worklist coordinates
-         std::for_each(mWorkList.begin(), mWorkList.end(), cRefreshWorklistCoords(this->TimerWrapper::cTimerWrapper::mAbort));
+         std::for_each(mWorkList.begin(), mWorkList.end(), 
+            cRefreshWorklistCoords(this->TimerWrapper::cTimerWrapper::mAbort));
 
          // Calculate collisions
          if (this->TimerWrapper::cTimerWrapper::IsAborting()) throw -999;
          std::for_each(mWorkList.begin(), mWorkList.end(), 
-            cBubbleFindCollisions(mCollisionList, mDistanceList, mCollisionResults, this->TimerWrapper::cTimerWrapper::mAbort));
+            cBubbleFindCollisions(mGroupList, mDistanceList, mCollisionResults, this->TimerWrapper::cTimerWrapper::mAbort));
 
          unsigned int size;
          size = mCollisionResults.size();
          void *list = NULL;
-
          if (size > 0)
          {
-            list = &( mCollisionResults.front() );
-                    
+            list = &( mCollisionResults.front() );                    
             cBubbleCollisionReportThread::Start(mThread1Or2 ? mThreadRun1 : mThreadRun2, mCollisionReportFunc, mGroupID, mID, (COLLISION_RESULT*) list, size); 
             mThread1Or2 = !mThread1Or2;
             // Milder on threads -> (*mCollisionReportFunc)(mGroupID, mID, (COLLISION_RESULT*) list, size);            
@@ -192,12 +223,18 @@ private:
             (*mTimerTrace)(GetID(), duration);
          }
       }
-      catch (int code)
+      catch (...)
       {
-         if (code != -999) throw;
+         if (false == this->TimerWrapper::cTimerWrapper::IsAborting()) throw;
       }
+      
 
-      mFlipFlop = false;
+      try
+      {
+         mFlipFlop = false;
+      }
+      catch (...)
+      { }
    };
 };
 

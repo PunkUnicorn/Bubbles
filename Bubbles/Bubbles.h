@@ -41,6 +41,7 @@ extern "C" DLL_PUBLIC unsigned int STDCALL AddEngineGroup(unsigned int engineId)
 extern "C" DLL_PUBLIC void STDCALL AddEngineToGroup(unsigned int engineGroupId, unsigned int engineId);
 extern "C" DLL_PUBLIC unsigned int STDCALL GetGroupCount(void);
 extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int bubbleId, float radius, GetCoordsFunc *fptr);
+extern "C" DLL_PUBLIC void STDCALL RemoveBubble(unsigned int engineId, unsigned int bubbleId);
 extern "C" DLL_PUBLIC void STDCALL SetEtheralness(unsigned int engineId, unsigned int bubbleId, bool etheralness); //etheral bubbles can be hit but don't hit anything back. Invisibleish
 extern "C" DLL_PUBLIC unsigned int STDCALL GetBubbleCount(unsigned int engineId);
 extern "C" DLL_PUBLIC void STDCALL StartEngine(unsigned int engineId, CollisionReportFunc *callback, unsigned int intervalMS);

@@ -36,11 +36,11 @@ items. But they only process results for their half of the workload. This is don
 - AddEngine() 
 -- for the second
 - AddEngineGroup() 
--- which takes an existing engine Id
+-- which takes an existing engine Id. Add groups first /before/ adding bubbles
 - AddEngineToGroup() 
 -- to associate the other engine Id with the group created above
 - AddBubble() 
--- etc add to either the first engine or the second
+-- etc add to either the first engine or the second. Note: groups have been set up before adding bubbles
 - StartEngine()
 -- to start the first engine
 - StartEngine()

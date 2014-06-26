@@ -40,7 +40,7 @@ private:
    bool mCached;
 
 public:   
-   inline void GetPreviousCenter(float &x, float &y, float &z) 
+   inline void GetCachedCenter(float &x, float &y, float &z) 
    {      
       x = lastX;
       y = lastY;
@@ -53,7 +53,7 @@ public:
          (*mGetCoordsFunc)(mEngineID, mID, lastX, lastY, lastZ);
          mCached = true;
       }
-      GetPreviousCenter(x, y, z);      
+      GetCachedCenter(x, y, z);      
    }
    inline void FactorySetRadius(float radius) { mRadius = radius; }
    inline void FactorySetID(unsigned int id) { mID = id; }
@@ -93,7 +93,7 @@ public:
             collision_results = &(bangs.front());
 
          (*mDistanceListUpdatedFunc)(
-            (TRILATERATION_DATA*) trilateration_list, // holds all TRILATERATION_DATA accumulated at this point, nine times out of ten this function will hold an incomplete set of data. The tenth time it will be complete
+            (TRILATERATION_DATA*) trilateration_list, // holds all TRILATERATION_DATA accumulated at this point, nine times out of ten (so to speak) this function will hold an incomplete set of data. The tenth time (so to speak) it will be complete
             list_size, 
             (COLLISION_RESULT*) collision_results, // note it's only the known collision results SO FAR, it's a collection in progress
             bangs_size );

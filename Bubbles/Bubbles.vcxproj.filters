@@ -62,5 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Bubbles.def" />
+    <None Include="..\README.md" />
   </ItemGroup>
 </Project>

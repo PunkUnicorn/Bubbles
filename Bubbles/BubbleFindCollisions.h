@@ -78,7 +78,7 @@ private:
       }
    };
       
-   const std::vector<cBubbleBubble::PTR> &mCollisionList;
+   const std::vector<cBubbleBubble::PTR> &mGroupList;
    std::vector<COLLISION_RESULT> &mCollisionResults;
    std::vector<TRILATERATION_DATA> &mDistanceList;
    bool &mAbort;
@@ -88,7 +88,7 @@ public:
          const std::vector<cBubbleBubble::PTR> &collisionList, 
          std::vector<TRILATERATION_DATA> &dlist, 
          std::vector<COLLISION_RESULT> &results,
-         bool &abort) : mCollisionList(collisionList), mCollisionResults(results), mDistanceList(dlist), mAbort(abort) {};
+         bool &abort) : mGroupList(collisionList), mCollisionResults(results), mDistanceList(dlist), mAbort(abort) {};
 
    inline result_type operator () (const argument_type& center) const
    { 
@@ -97,7 +97,7 @@ public:
          if (mAbort) throw -999;
 
          mDistanceList.clear();
-         std::for_each(mCollisionList.begin(), mCollisionList.end(),                   
+         std::for_each(mGroupList.begin(), mGroupList.end(),                   
             std::bind1st(cBubbleDimensionCracker(mDistanceList, mAbort), center));
 
          GetCollisionResults(mCollisionResults, mDistanceList, center.ptr->GetID(), center.ptr->GetRadius());

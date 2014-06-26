@@ -11,6 +11,7 @@
 namespace Bubbles
 {
 
+// looks after delivering the collision report to the application callback on a dedicated thread
 class cBubbleCollisionReportThread 
 {
 private:
