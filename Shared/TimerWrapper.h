@@ -52,6 +52,7 @@ private:
 
 public:
    inline void FactorySetDelay(unsigned int delay) { mEventCallbackDelay = delay; };
+   inline unsigned int GetDelay(void) const { return mEventCallbackDelay; }
    inline void SetPause(bool pause) 
    {
       if (mPaused == pause) return;

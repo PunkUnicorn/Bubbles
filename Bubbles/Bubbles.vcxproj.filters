@@ -14,12 +14,6 @@
     <ClInclude Include="BubbleBubble.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="BubbleDLL_PUBLIC.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="BubbleSTDCALL.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="BubbleFindCollisions.h">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -45,6 +39,12 @@
       <Filter>Headers\Shared</Filter>
     </ClInclude>
     <ClInclude Include="Bubbles.h" />
+    <ClInclude Include="..\Shared\STDCALL.h">
+      <Filter>Headers\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shared\DLL_PUBLIC.h">
+      <Filter>Headers\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

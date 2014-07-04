@@ -8,6 +8,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinForms_CSExample", "..\Wi
 		{5144B4B1-5892-4BE6-A9B9-6AE7EBBF7D86} = {5144B4B1-5892-4BE6-A9B9-6AE7EBBF7D86}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{0C08E430-C5C9-4BE3-A860-EE4A45C05C15}"
+	ProjectSection(SolutionItems) = preProject
+		..\Shared\DLL_PUBLIC.h = ..\Shared\DLL_PUBLIC.h
+		..\Shared\STDCALL.h = ..\Shared\STDCALL.h
+		..\Shared\TimerWrapper.cpp = ..\Shared\TimerWrapper.cpp
+		..\Shared\TimerWrapper.h = ..\Shared\TimerWrapper.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms

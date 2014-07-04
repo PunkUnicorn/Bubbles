@@ -53,6 +53,8 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\SDL-1.2.15\include;$(ProjectDir)..\Shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -105,12 +107,12 @@ xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y<
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Shared\DLL_PUBLIC.h" />
+    <ClInclude Include="..\Shared\STDCALL.h" />
     <ClInclude Include="..\Shared\TimerWrapper.h" />
     <ClInclude Include="BubbleCollisionReportThread.h" />
     <ClInclude Include="BubbleConsole.h" />
-    <ClInclude Include="BubbleDLL_PUBLIC.h" />
     <ClInclude Include="Bubbles.h" />
-    <ClInclude Include="BubbleSTDCALL.h" />
     <ClInclude Include="BubbleTrace.h" />
     <ClInclude Include="BubbleBubble.h" />
     <ClInclude Include="BubbleDimensionCracker.h" />

@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <map>
-#include "BubbleSTDCALL.h"
+#include "STDCALL.h"
 #include "BubbleBubble.h"
 #include "..\Shared\TimerWrapper.h"
 #include "BubbleDimensionCracker.h"
@@ -49,12 +49,13 @@ public:
       mGroupID(0),
       mID(ID),
       mReserveAmount(),
-      mFlipFlop(false),
+     // mFlipFlop(false),
       mBubbleRunningLock(),
       mBubbleRunningCond(NULL),
       mGroupList(),
       mListLock(),
       mWorkList(),
+      mRecycleBin(),
       mDistanceList(),
       mCollisionResults(),
       mCollisionReportFunc(NULL),
@@ -66,10 +67,17 @@ public:
       mCollisionResults.reserve(reserveAmount);
    }
 
+   inline void Purge(void)
+   {
+      // empty recycle bin
+   }
+
    inline void FactoryAddWorkList(cBubbleBubble::PTR &addMe) 
    { 
       TimerWrapper::cMutexWrapper::Lock lock(GetLock());
       mWorkList.push_back(addMe);
+
+      Purge();
    }
    inline void FactoryAddGroupList(cBubbleBubble::PTR &addMe) 
    { 
@@ -96,13 +104,16 @@ public:
       std::vector<cBubbleBubble::PTR>::iterator workListIt = std::find(mWorkList.begin(), mWorkList.end(), findMe);
       if (workListIt != mWorkList.end())
       {
+         findMe.ptr->FactorySetDeleted(true);
+         mRecycleBin.push_back(findMe);
          std::swap(*workListIt, mWorkList.back());
 	      mWorkList.pop_back();
       }
    }
 
    inline const std::vector<cBubbleBubble::PTR> &GetWorkList(void) const { return mWorkList; };
-   inline const std::vector<cBubbleBubble::PTR> &GetGroupList() const { return mGroupList; }
+   inline const std::vector<cBubbleBubble::PTR> &GetGroupList(void) const { return mGroupList; }
+   //inline const std::vector<cBubbleBubble::PTR> &GetRecycleBin(void) const { return mRecycleBin; }
 
    inline void SetTimerTraceFunc(TraceFunc *func) { mTimerTrace = func; };
    inline void SetGroup(unsigned int groupID) { mGroupID = groupID; }
@@ -117,6 +128,8 @@ public:
       for (; it != mGroupList.end(); it++)
       {
          if (it->ptr->GetID() != Id) continue;
+         if (it->ptr->GetIsDeleted()) 
+            break;
          return *it;
       }
       return dud;
@@ -124,6 +137,7 @@ public:
 
    inline TimerWrapper::cMutexWrapper *GetLock(void) { return &mListLock; }
    inline unsigned int GetID(void) const { return mID; }
+   inline unsigned int GetGroup(void) const { return mGroupID; }
 
    void Start(CollisionReportFunc *collisionReportFunc, unsigned int interval=FIVE_A_SECOND)
    {
@@ -146,13 +160,14 @@ private:
    unsigned int mGroupID;
    unsigned int mID;
    unsigned int mReserveAmount;
-   bool mFlipFlop;
+   //bool mFlipFlop;
    TimerWrapper::cMutexWrapper mBubbleRunningLock;
    SDL_cond *mBubbleRunningCond;
 
    std::vector<cBubbleBubble::PTR> mGroupList; // total list of everything that can collide
    TimerWrapper::cMutexWrapper mListLock;
    std::vector<cBubbleBubble::PTR> mWorkList; // list of what this engine compares and reports on, because work can be split over two engines
+   std::vector<cBubbleBubble::PTR> mRecycleBin; // deleted bubbles
 
    std::vector<TRILATERATION_DATA> mDistanceList; // results of relative distances
    std::vector<COLLISION_RESULT> mCollisionResults; // results of found collisions
@@ -169,15 +184,16 @@ private:
 
    void EventTimerLocked(void)
    {
+      SDL_Delay(30);
       TimerWrapper::cMutexWrapper::Lock lock(GetEngineCycleLock());
 
       try
       {
-         if (mFlipFlop) return;
-         mFlipFlop = true;        
+         //if (mFlipFlop) return;
+         //mFlipFlop = true;        
       
-         SDL_Delay(30);
-         if (this->TimerWrapper::cTimerWrapper::IsAborting()) throw -999;
+
+         if (this->TimerWrapper::cTimerWrapper::IsAborting()) return;
       }
       catch (...)
       {
@@ -225,16 +241,19 @@ private:
       }
       catch (...)
       {
-         if (false == this->TimerWrapper::cTimerWrapper::IsAborting()) throw;
+         if (this->TimerWrapper::cTimerWrapper::IsAborting() == false) 
+            throw;
+         else
+            /*eat exception and move on*/;
       }
       
 
-      try
+      /*try
       {
          mFlipFlop = false;
       }
       catch (...)
-      { }
+      { }*/
    };
 };
 

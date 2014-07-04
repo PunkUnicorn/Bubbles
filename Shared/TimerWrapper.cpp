@@ -12,7 +12,7 @@ namespace TimerWrapper
 base class to encapsulate the SDL timer
 */
 
-cTimerWrapper::cTimerWrapper(void) : mAbort(false), mPaused(false), mTimerID(0), mThreadID(NULL), mEventCallbackDelay(120) {};
+cTimerWrapper::cTimerWrapper(void) : mAbort(false), mThisTribbleIsDead(false), mPaused(false), mTimerID(0), mThreadID(NULL), mEventCallbackDelay(120) {};
 cTimerWrapper::~cTimerWrapper(void)
 {
    mAbort = true;
@@ -68,7 +68,7 @@ unsigned int cTimerWrapper::timer_callback(unsigned int interval, void *pParam)
    catch (...)
    {
       if (envoke->mAbort) throw -999;
-      throw -42;
+      //throw -42;
    }
    SDL_Delay(0);
 

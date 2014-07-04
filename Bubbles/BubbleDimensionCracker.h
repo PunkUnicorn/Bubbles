@@ -32,9 +32,17 @@ public:
    inline result_type operator () (const first_argument_type &universeCenter, const second_argument_type &from_this_shape) const
    {
       if (mAbort) throw -999;
-      if (from_this_shape.ptr->GetID() == universeCenter.ptr->GetID()) return;
-      // etheral bubbles can't hit anything themselves. But other things register to them
-      if (from_this_shape.ptr->GetEtherealness()) return;
+      // ignore our own shadow
+      if (from_this_shape.ptr->GetID() == universeCenter.ptr->GetID()) 
+         return;
+      // we can't see etheral bubbles
+      if (from_this_shape.ptr->GetEtherealness()) 
+         return;
+      // ignore anything associated with a deleted thing
+      if (from_this_shape.ptr->GetIsDeleted()) 
+         return;  
+      if (universeCenter.ptr->GetIsDeleted()) 
+         return;
 
       TRILATERATION_DATA new_unit;
       new_unit.id = from_this_shape.ptr->GetID();
@@ -44,7 +52,7 @@ public:
 
       float universeCenterX, universeCenterY, universeCenterZ;
       universeCenter.ptr->GetCollisionCenter(universeCenterX, universeCenterY, universeCenterZ);
-
+     
       new_unit.axis = cAxisSplitterAXIS::X;
       new_unit.rel_coord = from_this_shapeX - universeCenterX;
       if (universeCenterX > from_this_shapeX)

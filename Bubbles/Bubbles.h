@@ -5,8 +5,8 @@
 
 #ifndef BUBBLES_H
 #define BUBBLES_H
-#include "BubbleSTDCALL.h"
-#include "BubbleDLL_PUBLIC.h"
+#include "STDCALL.h"
+#include "DLL_PUBLIC.h"
 
 namespace Bubbles 
 {

@@ -7,9 +7,9 @@
 #include "BubbleVariables.h"
 #include <vector>
 #include <SDL.h>
-#include "BubbleSTDCALL.h"
+#include "STDCALL.h"
 
-#include "BubbleDLL_PUBLIC.h"
+#include "DLL_PUBLIC.h"
 
 using namespace Bubbles;
 
@@ -75,6 +75,7 @@ extern "C" DLL_PUBLIC void STDCALL UnInitBubbles(void)
             UnInitBubblesClasses::CheckEngineState(hasAborted));
       }
       while (hasAborted == false);
+
       std::for_each(engines.begin(), engines.end(), UnInitBubblesClasses::StopEngine(false));
    }
    catch (...)
@@ -87,12 +88,20 @@ extern "C"  static  void STDCALL ClearCache(unsigned int groupId)
 {
    try
    {
-      // clear the cache when the last engine of the group calls ClearCache
+      static Uint32 noMatterWhatClearCacheAt;
+      Uint32 now = SDL_GetTicks();
+      static const Uint32 AllOverridingCacheAge = 200; //ms
       static std::map<unsigned int /*groupId*/, unsigned int /*call per group count*/> callPerGroup;
-      if (++callPerGroup[groupId] != engineGroups[groupId].size()) 
-         return;
 
-      // since we have not exited the function this must be the last call of ClearCache for the group
+      if (noMatterWhatClearCacheAt < now)
+      {
+         // clear the cache when the last engine of the group calls ClearCache
+         if (++callPerGroup[groupId] != engineGroups[groupId].size()) 
+            return;
+      }
+
+      noMatterWhatClearCacheAt = now + AllOverridingCacheAge;
+      // since we have not exited the function it's time to clear the cache
       for (std::map<unsigned int, BUBBLE_COORDS>::iterator it=bubbleCoords.begin(); it != bubbleCoords.end(); ++it)
          if (groupId == it->second.groupId) 
             it->second.cached = false;
@@ -114,7 +123,7 @@ extern "C"  static  void STDCALL GetBubbleXYZ(unsigned int engineId, unsigned in
       {
          bubbleChords.cached = true;
          // get the coordinates by calling the functio
-         (*bubbleChords.getCoords)(engineId, id, bubbleChords.x, bubbleChords.y, bubbleChords.z);
+         (*bubbleChords.getCoords)(engineId, id, bubbleChords.x, bubbleChords.y, bubbleChords.z);         
       }
 
       px = bubbleChords.x;

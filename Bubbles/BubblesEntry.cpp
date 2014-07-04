@@ -8,9 +8,9 @@
 #include <SDL.h>
 //#include <string>
 #include <iostream>
-#include "BubbleSTDCALL.h"
+#include "STDCALL.h"
 
-#include "BubbleDLL_PUBLIC.h"
+#include "DLL_PUBLIC.h"
 #include "Bubbles.h"
 
 #ifdef _WINDLL // <-------- there is a #else

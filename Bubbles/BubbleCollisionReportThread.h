@@ -30,18 +30,24 @@ private:
 
    static int thread_function(void *p)
    {
-      if (p == NULL) return 0;
-      REPORT_PAYLOAD &payload = *(REPORT_PAYLOAD *)p;
+      try
+      {
+         if (p == NULL) return 0;
+         REPORT_PAYLOAD &payload = *(REPORT_PAYLOAD *)p;
         
-      payload.reportFunc(payload.groupID, payload.engineId, payload.list, payload.size);
-      payload.allocator->deallocate(&payload, 1);
+         payload.reportFunc(payload.groupID, payload.engineId, payload.list, payload.size);
+         payload.allocator->deallocate(&payload, 1);
 
-      //                
-      //             ,\ ! /, 
-      //            -- POP --
-      //             '/ ! \' 
-      //
-
+         //                
+         //             ,\ ! /, 
+         //            -- POP --
+         //             '/ ! \' 
+         //
+      }
+      catch (...)
+      {
+         return -1;
+      }
       return 0;
    };
 
@@ -58,6 +64,7 @@ public:
       payload.engineId = pengineId;
       payload.list = plist;
       payload.size = psize;
+      payload.allocator = &me.mPayloadAllocator;
 
       int threadReturnValue;
       SDL_WaitThread(me.mThreadID, &threadReturnValue);

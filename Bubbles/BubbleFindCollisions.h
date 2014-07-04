@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <map>
 
+//#include <Windows.h>
+
 namespace Bubbles
 {
 
@@ -73,6 +75,10 @@ private:
                found_result.mCenterID = id; 
                results.push_back(found_result);
                push_count++;
+
+              /* wchar_t info_line[80];
+               wsprintf(info_line, L"ID = %i, other one = %i\n", found_result.mCenterID, found_result.mDistanceUnits[0].id);
+               OutputDebugString(info_line);*/
             }
          }      
       }
@@ -95,8 +101,10 @@ public:
       try
       {
          if (mAbort) throw -999;
-
          mDistanceList.clear();
+         if (center.ptr->GetIsDeleted()) 
+            return;
+
          std::for_each(mGroupList.begin(), mGroupList.end(),                   
             std::bind1st(cBubbleDimensionCracker(mDistanceList, mAbort), center));
 

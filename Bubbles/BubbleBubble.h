@@ -6,7 +6,7 @@
 #ifndef BUBBLEBUBBLE_H
 #define BUBBLEBUBBLE_H
 #include <vector>
-#include "BubbleSTDCALL.h"
+#include "STDCALL.h"
 #include "Bubbles.h"
 #include <SDL.h>
 
@@ -33,6 +33,8 @@ private:
    unsigned int mID;
    float mRadius;
    bool mEtherealness;
+   bool mIsDeleted;
+   Uint32 mDeletedAt;
 
    GetCoordsFunc *mGetCoordsFunc;
    DistanceListUpdatedFunc *mDistanceListUpdatedFunc;
@@ -41,14 +43,19 @@ private:
 
 public:   
    inline void GetCachedCenter(float &x, float &y, float &z) 
-   {      
-      x = lastX;
-      y = lastY;
-      z = lastZ;
+   {
+      if (GetIsDeleted() == false && mCached == false) 
+         GetCollisionCenter(x, y, z);
+      else
+      {
+         x = lastX;
+         y = lastY;
+         z = lastZ;
+      }
    }
    inline void GetCollisionCenter(float &x, float &y, float &z) 
    {
-      if (mCached == false)      
+      if (GetIsDeleted() == false && mCached == false)      
       {
          (*mGetCoordsFunc)(mEngineID, mID, lastX, lastY, lastZ);
          mCached = true;
@@ -58,10 +65,16 @@ public:
    inline void FactorySetRadius(float radius) { mRadius = radius; }
    inline void FactorySetID(unsigned int id) { mID = id; }
    inline void FactorySetEtherealness(bool etherealness) { mEtherealness = etherealness; }
+   inline void FactorySetDeleted(bool isDeleted) 
+   { 
+      mIsDeleted = isDeleted; 
+      mDeletedAt = SDL_GetTicks(); 
+   }
 
-   inline bool GetEtherealness() const { return mEtherealness; }
-   inline float GetRadius() const { return mRadius; };
-   inline unsigned int const GetID() const { return mID; }
+   inline bool GetEtherealness(void) const { return mEtherealness; }
+   inline bool GetIsDeleted(void) const { return mIsDeleted; }
+   inline float GetRadius(void) const { return mRadius; };
+   inline unsigned int const GetID(void) const { return mID; }
    inline void ClearCache(void) { mCached = false; }
 
    cBubbleBubble(unsigned int engineId, unsigned int id, float radius, GetCoordsFunc *getCoordsFunc) 
@@ -69,6 +82,8 @@ public:
       mID(id), 
       mRadius(radius), 
       mEtherealness(false), 
+      mIsDeleted(false),
+      mDeletedAt(0),
       mGetCoordsFunc(getCoordsFunc), 
       mDistanceListUpdatedFunc(NULL),
       lastX(0.0f), lastY(0.0f), lastZ(0.0f),

@@ -411,7 +411,6 @@ namespace WinForms_CSExample
             {
                 me.HitLookup[key] = false;
             }
-
         }
         #endregion
 
