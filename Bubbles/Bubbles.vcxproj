@@ -44,6 +44,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -103,13 +105,21 @@ xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y<
     <PostBuildEvent>
       <Command>md "$(OutDir)..\..\Publish" 
 md "$(OutDir)..\..\Publish\$(Configuration)"
-xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y</Command>
+xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y
+
+xcopy "$(SolutionDir)$(ConfigurationName)\Bubbles.*" "C:\Users\Matthew\workspace\Publish" /Y</Command>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Shared\CoordCallback.h" />
     <ClInclude Include="..\Shared\DLL_PUBLIC.h" />
     <ClInclude Include="..\Shared\STDCALL.h" />
     <ClInclude Include="..\Shared\TimerWrapper.h" />
+    <ClInclude Include="..\Shared\TraceFunc.h" />
     <ClInclude Include="BubbleCollisionReportThread.h" />
     <ClInclude Include="BubbleConsole.h" />
     <ClInclude Include="Bubbles.h" />

@@ -23,6 +23,7 @@ private:
       unsigned int size;
       CollisionReportFunc *reportFunc;
       std::allocator<tagREPORT_PAYLOAD> *allocator;
+      TraceFunc *traceFunc;
    } REPORT_PAYLOAD;
 
    std::allocator<REPORT_PAYLOAD> mPayloadAllocator;
@@ -54,7 +55,7 @@ private:
 public:
    cBubbleCollisionReportThread(void) : mPayloadAllocator(), mThreadID(NULL) { };
    void Init(void) { mThreadID = SDL_CreateThread(thread_function, NULL); };
-   static void Start(cBubbleCollisionReportThread &me, CollisionReportFunc *func, unsigned int pgroupID, unsigned int pengineId, COLLISION_RESULT* plist, unsigned int psize)
+   static void Start(TraceFunc *traceFunc, cBubbleCollisionReportThread &me, CollisionReportFunc *func, unsigned int pgroupID, unsigned int pengineId, COLLISION_RESULT* plist, unsigned int psize)
    {
       REPORT_PAYLOAD *p = me.mPayloadAllocator.allocate(1);
       REPORT_PAYLOAD &payload = *p;
@@ -65,6 +66,7 @@ public:
       payload.list = plist;
       payload.size = psize;
       payload.allocator = &me.mPayloadAllocator;
+      payload.traceFunc = traceFunc;
 
       int threadReturnValue;
       SDL_WaitThread(me.mThreadID, &threadReturnValue);

@@ -13,9 +13,15 @@
 
 using namespace Bubbles;
 
-extern "C" DLL_PUBLIC bool STDCALL InitBubbles(void)
+extern "C" DLL_PUBLIC bool STDCALL InitBubbles(bool initSdl)
 {
    Uint32 flags = SDL_INIT_TIMER;
+
+   if (initSdl)
+   {
+      SDL_Init(flags);
+      didInitSDL = initSdl;
+   }
 
    if (SDL_WasInit(0) != flags)
    {
@@ -77,6 +83,11 @@ extern "C" DLL_PUBLIC void STDCALL UnInitBubbles(void)
       while (hasAborted == false);
 
       std::for_each(engines.begin(), engines.end(), UnInitBubblesClasses::StopEngine(false));
+
+      if (didInitSDL)
+      {
+         SDL_Quit();
+      }
    }
    catch (...)
    { }
@@ -84,26 +95,30 @@ extern "C" DLL_PUBLIC void STDCALL UnInitBubbles(void)
 
 // this function works but is shit, click here to re-write it
 // passed to the engine so it can call us when it needs to refresh the groups bubbles X, Y and Z cached values
+static Uint32 AllOverridingCacheAgeMs;
+
 extern "C"  static  void STDCALL ClearCache(unsigned int groupId)
 {
    try
    {
-      static Uint32 noMatterWhatClearCacheAt;
+      //static Uint32 noMatterWhatClearCacheAt; // note limitiation one group only
       Uint32 now = SDL_GetTicks();
-      static const Uint32 AllOverridingCacheAge = 200; //ms
+      //static const Uint32 AllOverridingCacheAge = 200; //ms
+      static std::map<unsigned int /*groupId*/, Uint32 /*ticks when cache expires*/> groupCacheRefreshAtLeast;
       static std::map<unsigned int /*groupId*/, unsigned int /*call per group count*/> callPerGroup;
 
-      if (noMatterWhatClearCacheAt < now)
+      if (groupCacheRefreshAtLeast[groupId] /*noMatterWhatClearCacheAt */< now)
       {
          // clear the cache when the last engine of the group calls ClearCache
-         if (++callPerGroup[groupId] != engineGroups[groupId].size()) 
-            return;
+         if (engineGroups.size() > 0 && engineGroups[groupId].size() > 0)
+            if (++callPerGroup[groupId] != engineGroups[groupId].size()) 
+               return;
       }
 
-      noMatterWhatClearCacheAt = now + AllOverridingCacheAge;
+      groupCacheRefreshAtLeast[groupId] /*noMatterWhatClearCacheAt*/ = now + AllOverridingCacheAgeMs;
       // since we have not exited the function it's time to clear the cache
       for (std::map<unsigned int, BUBBLE_COORDS>::iterator it=bubbleCoords.begin(); it != bubbleCoords.end(); ++it)
-         if (groupId == it->second.groupId) 
+         if (groupId == it->second.groupId)
             it->second.cached = false;
 
       callPerGroup[groupId] = 0;
@@ -122,8 +137,8 @@ extern "C"  static  void STDCALL GetBubbleXYZ(unsigned int engineId, unsigned in
       if (bubbleChords.cached == false)
       {
          bubbleChords.cached = true;
-         // get the coordinates by calling the functio
-         (*bubbleChords.getCoords)(engineId, id, bubbleChords.x, bubbleChords.y, bubbleChords.z);         
+         // get the coordinates by calling the function
+         (*bubbleChords.getCoords)(engineId, id, bubbleChords.x, bubbleChords.y, bubbleChords.z);
       }
 
       px = bubbleChords.x;
@@ -257,6 +272,8 @@ extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int
       BUBBLE_COORDS &bubbleChords = *(&(bubbleCoords[bubbleId]));
 
       bubbleChords.getCoords = getCoords;
+      bubbleChords.x = bubbleChords.y = bubbleChords.z = 0.0f;
+      bubbleChords.groupId = found.ptr->GetGroup();
       bubbleChords.cached = false;
       cBubbleBubble *newOne = new cBubbleBubble(engineId, bubbleId, radius, GetBubbleXYZ);//getCoords);
 
@@ -310,6 +327,22 @@ extern "C" DLL_PUBLIC void STDCALL RemoveBubble(unsigned int engineId, unsigned 
    { }
 }
 
+extern "C" DLL_PUBLIC bool STDCALL GetEtheralness(unsigned int engineId, unsigned int bubbleId)
+{
+   try
+   {
+      cBubbleEngine::PTR found = GetEngine(engineId);
+      if (found.ptr == NULL) return false;
+      cBubbleBubble *bubble = found.ptr->FactoryGetBubble(bubbleId).ptr;
+      if (bubble == NULL) return false;
+      return bubble->GetEtherealness();
+   }
+   catch (...)
+   { 
+      return false;
+   }
+}
+
 extern "C" DLL_PUBLIC void STDCALL SetEtheralness(unsigned int engineId, unsigned int bubbleId, bool etheralness)
 {
    try
@@ -319,6 +352,36 @@ extern "C" DLL_PUBLIC void STDCALL SetEtheralness(unsigned int engineId, unsigne
       cBubbleBubble *bubble = found.ptr->FactoryGetBubble(bubbleId).ptr;
       if (bubble == NULL) return;
       bubble->FactorySetEtherealness(etheralness);
+   }
+   catch (...)
+   { }
+}
+
+extern "C" DLL_PUBLIC float STDCALL GetRadius(unsigned int engineId, unsigned int bubbleId)
+{
+   try
+   {
+      cBubbleEngine::PTR found = GetEngine(engineId);
+      if (found.ptr == NULL) return 0;
+      cBubbleBubble *bubble = found.ptr->FactoryGetBubble(bubbleId).ptr;
+      if (bubble == NULL) return 0;
+      return bubble->GetRadius();
+   }
+   catch (...)
+   { 
+      return 0;
+   }
+}
+
+extern "C" DLL_PUBLIC void STDCALL SetRadius(unsigned int engineId, unsigned int bubbleId, float radius)
+{
+    try
+   {
+      cBubbleEngine::PTR found = GetEngine(engineId);
+      if (found.ptr == NULL) return;
+      cBubbleBubble *bubble = found.ptr->FactoryGetBubble(bubbleId).ptr;
+      if (bubble == NULL) return;
+      bubble->FactorySetRadius(radius);
    }
    catch (...)
    { }
@@ -341,6 +404,7 @@ extern "C" DLL_PUBLIC void STDCALL StartEngine(unsigned int engineId, CollisionR
 {
    try
    {
+      AllOverridingCacheAgeMs = (int) (intervalMS / 0.9f);
       cBubbleEngine::PTR found = GetEngine(engineId);
       found.ptr->Start(callback, intervalMS);
    }

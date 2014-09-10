@@ -45,6 +45,12 @@
     <ClInclude Include="..\Shared\DLL_PUBLIC.h">
       <Filter>Headers\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\Shared\CoordCallback.h">
+      <Filter>Headers\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shared\TraceFunc.h">
+      <Filter>Headers\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

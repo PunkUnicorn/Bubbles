@@ -68,7 +68,7 @@ namespace WinForms_CSExample
         public delegate void GetCoordsFunc(uint engineId, uint id, ref float x, ref float y, ref float z);
         public delegate void CollisionReportFunc(uint groupId, uint engineId, IntPtr arrayPtr, uint size);
  
-        public delegate bool InitBubbles();
+        public delegate bool InitBubbles(bool initSdl);
         public delegate void UnInitBubbles();
         public delegate uint AddEngine();
         public delegate void SetEngineTimerTrace(uint engineId, TimerTraceFunc timerTraceFunc);
@@ -143,7 +143,7 @@ namespace WinForms_CSExample
 
         public Bubbles()
         {
-            InitBubbles();
+            InitBubbles(true);
         }
         
         /// <summary>

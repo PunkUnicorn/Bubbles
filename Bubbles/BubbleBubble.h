@@ -7,6 +7,7 @@
 #define BUBBLEBUBBLE_H
 #include <vector>
 #include "STDCALL.h"
+#include "CoordCallback.h"
 #include "Bubbles.h"
 #include <SDL.h>
 

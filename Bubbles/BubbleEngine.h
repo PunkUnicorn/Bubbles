@@ -5,6 +5,7 @@
 
 #ifndef BUBBLEENGINE_H
 #define BUBBLEENGINE_H
+
 #include <vector>
 #include <algorithm>
 #include <map>
@@ -49,27 +50,27 @@ public:
       mGroupID(0),
       mID(ID),
       mReserveAmount(),
-     // mFlipFlop(false),
       mBubbleRunningLock(),
-      mBubbleRunningCond(NULL),
       mGroupList(),
       mListLock(),
       mWorkList(),
       mRecycleBin(),
       mDistanceList(),
-      mCollisionResults(),
+      mCollisionResults1(),
+      mCollisionResults2(),
       mCollisionReportFunc(NULL),
       mThreadRun1(),
       mThreadRun2(),
       mThread1Or2(false) 
    { 
       mDistanceList.reserve(reserveAmount);
-      mCollisionResults.reserve(reserveAmount);
+      mCollisionResults1.reserve(reserveAmount);
+      mCollisionResults2.reserve(reserveAmount);
    }
 
    inline void Purge(void)
    {
-      // empty recycle bin
+      // TODO: recruit minions to write this
    }
 
    inline void FactoryAddWorkList(cBubbleBubble::PTR &addMe) 
@@ -85,7 +86,6 @@ public:
       mGroupList.push_back(addMe);
    }
 
-   inline SDL_cond *GetEngineIdleCond(void) { return mBubbleRunningCond; }
    inline TimerWrapper::cMutexWrapper *GetEngineCycleLock(void) { return &mBubbleRunningLock; }
 
    inline void FactoryRemove(unsigned int bubbleId)
@@ -113,9 +113,9 @@ public:
 
    inline const std::vector<cBubbleBubble::PTR> &GetWorkList(void) const { return mWorkList; };
    inline const std::vector<cBubbleBubble::PTR> &GetGroupList(void) const { return mGroupList; }
-   //inline const std::vector<cBubbleBubble::PTR> &GetRecycleBin(void) const { return mRecycleBin; }
 
    inline void SetTimerTraceFunc(TraceFunc *func) { mTimerTrace = func; };
+   inline unsigned int GetDelay(void) { return this->cTimerWrapper::GetDelay(); }
    inline void SetGroup(unsigned int groupID) { mGroupID = groupID; }
    inline void SetPause(bool pause) { this->TimerWrapper::cTimerWrapper::SetPause(pause); }
    inline void Abort(void) { this->TimerWrapper::cTimerWrapper::Abort(); };
@@ -141,7 +141,6 @@ public:
 
    void Start(CollisionReportFunc *collisionReportFunc, unsigned int interval=FIVE_A_SECOND)
    {
-      mBubbleRunningCond = SDL_CreateCond();
       mThreadRun1.Init();
       mThreadRun2.Init();
       mCollisionReportFunc = collisionReportFunc;
@@ -160,9 +159,7 @@ private:
    unsigned int mGroupID;
    unsigned int mID;
    unsigned int mReserveAmount;
-   //bool mFlipFlop;
    TimerWrapper::cMutexWrapper mBubbleRunningLock;
-   SDL_cond *mBubbleRunningCond;
 
    std::vector<cBubbleBubble::PTR> mGroupList; // total list of everything that can collide
    TimerWrapper::cMutexWrapper mListLock;
@@ -170,7 +167,10 @@ private:
    std::vector<cBubbleBubble::PTR> mRecycleBin; // deleted bubbles
 
    std::vector<TRILATERATION_DATA> mDistanceList; // results of relative distances
-   std::vector<COLLISION_RESULT> mCollisionResults; // results of found collisions
+   // second bank of these?
+
+   std::vector<COLLISION_RESULT> mCollisionResults1; // results of found collisions
+   std::vector<COLLISION_RESULT> mCollisionResults2; // results of found collisions
    CollisionReportFunc *mCollisionReportFunc; // collision callback to inform of collisions
    cBubbleCollisionReportThread mThreadRun1;
    cBubbleCollisionReportThread mThreadRun2;
@@ -179,37 +179,27 @@ private:
    void EventTimer(void)
    {
       EventTimerLocked();
-      SDL_CondBroadcast(mBubbleRunningCond);
    }
 
    void EventTimerLocked(void)
    {
-      SDL_Delay(30);
+      Uint32 start = 0;
+      if (mTimerTrace != NULL)
+         start = SDL_GetTicks();
+
+      SDL_Delay(0);
       TimerWrapper::cMutexWrapper::Lock lock(GetEngineCycleLock());
 
+      if (this->TimerWrapper::cTimerWrapper::IsAborting()) return;
+
       try
       {
-         //if (mFlipFlop) return;
-         //mFlipFlop = true;        
-      
+         TimerWrapper::cMutexWrapper::Lock lock(GetLock());         
+         bool useThread1 
+               = mThread1Or2 = !mThread1Or2;
 
-         if (this->TimerWrapper::cTimerWrapper::IsAborting()) return;
-      }
-      catch (...)
-      {
-         if (this->TimerWrapper::cTimerWrapper::IsAborting()) throw -999;
-      }
-
-      // this is where collisions are deduced
-      try
-      {
-         TimerWrapper::cMutexWrapper::Lock lock(GetLock());
-
-         Uint32 start = 0;
-         if (mTimerTrace != NULL)
-            start = SDL_GetTicks();
-
-         mCollisionResults.clear();
+         std::vector<COLLISION_RESULT> &useResultsBuffer = (useThread1 ? mCollisionResults1 : mCollisionResults2);
+         useResultsBuffer.clear();
 
          if (mClearCacheFunc != NULL)
             (*mClearCacheFunc)(mGroupID);
@@ -217,19 +207,20 @@ private:
          std::for_each(mWorkList.begin(), mWorkList.end(), 
             cRefreshWorklistCoords(this->TimerWrapper::cTimerWrapper::mAbort));
 
-         // Calculate collisions
          if (this->TimerWrapper::cTimerWrapper::IsAborting()) throw -999;
-         std::for_each(mWorkList.begin(), mWorkList.end(), 
-            cBubbleFindCollisions(mGroupList, mDistanceList, mCollisionResults, this->TimerWrapper::cTimerWrapper::mAbort));
+
+         // Calculate collisions
+         if (mWorkList.size() > 0)
+            std::for_each(mWorkList.begin(), mWorkList.end(), 
+               cBubbleFindCollisions(mTimerTrace, mGroupList, mDistanceList, useResultsBuffer, this->TimerWrapper::cTimerWrapper::mAbort));
 
          unsigned int size;
-         size = mCollisionResults.size();
+         size = useResultsBuffer.size();
          void *list = NULL;
          if (size > 0)
          {
-            list = &( mCollisionResults.front() );                    
-            cBubbleCollisionReportThread::Start(mThread1Or2 ? mThreadRun1 : mThreadRun2, mCollisionReportFunc, mGroupID, mID, (COLLISION_RESULT*) list, size); 
-            mThread1Or2 = !mThread1Or2;
+            list = &( useResultsBuffer.front() );
+            cBubbleCollisionReportThread::Start(mTimerTrace, ( mThread1Or2 ? mThreadRun1 : mThreadRun2 ), mCollisionReportFunc, mGroupID, mID, (COLLISION_RESULT*) list, size); 
             // Milder on threads -> (*mCollisionReportFunc)(mGroupID, mID, (COLLISION_RESULT*) list, size);            
          }
 
@@ -246,14 +237,6 @@ private:
          else
             /*eat exception and move on*/;
       }
-      
-
-      /*try
-      {
-         mFlipFlop = false;
-      }
-      catch (...)
-      { }*/
    };
 };
 

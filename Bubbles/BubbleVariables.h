@@ -37,7 +37,7 @@ static std::vector<cBubbleEngine::PTR> engines;
 static std::map<unsigned int /*engineGroupId*/, std::vector<unsigned int /*engineId*/> > engineGroups;
 static std::map<unsigned int /*engineId*/, unsigned int /*engineGroupId*/> engineToGroup;
 static std::map<unsigned int /*bubbleId*/, BUBBLE_COORDS> bubbleCoords;
-
+static bool didInitSDL;
 }
 
 #endif

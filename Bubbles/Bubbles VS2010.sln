@@ -3,18 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Bubbles", "Bubbles.vcxproj", "{5144B4B1-5892-4BE6-A9B9-6AE7EBBF7D86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinForms_CSExample", "..\WinForms_CSExample\WinForms_CSExample.csproj", "{30EDABD5-B30E-449D-B131-9428274B8B33}"
-	ProjectSection(ProjectDependencies) = postProject
-		{5144B4B1-5892-4BE6-A9B9-6AE7EBBF7D86} = {5144B4B1-5892-4BE6-A9B9-6AE7EBBF7D86}
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{0C08E430-C5C9-4BE3-A860-EE4A45C05C15}"
 	ProjectSection(SolutionItems) = preProject
+		..\Shared\CoordCallback.h = ..\Shared\CoordCallback.h
 		..\Shared\DLL_PUBLIC.h = ..\Shared\DLL_PUBLIC.h
 		..\Shared\STDCALL.h = ..\Shared\STDCALL.h
 		..\Shared\TimerWrapper.cpp = ..\Shared\TimerWrapper.cpp
 		..\Shared\TimerWrapper.h = ..\Shared\TimerWrapper.h
+		..\Shared\TraceFunc.h = ..\Shared\TraceFunc.h
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bubbles_WinForms_CSExample", "..\Bubbles_WinForms_CSExample\Bubbles_WinForms_CSExample.csproj", "{30EDABD5-B30E-449D-B131-9428274B8B33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

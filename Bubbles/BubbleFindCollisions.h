@@ -12,8 +12,6 @@
 #include <algorithm>
 #include <map>
 
-//#include <Windows.h>
-
 namespace Bubbles
 {
 
@@ -25,19 +23,18 @@ private:
       public:
          inline result_type operator () (const first_argument_type& otherThing, const second_argument_type& radius) const
          {
-            return radius < otherThing.abs_dist;
+            return radius < (otherThing.abs_dist - otherThing.radius);
          };
    };
 
    /* take distance units and judge if a collision has been made with the given radius */
-   static void GetCollisionResults(std::vector<COLLISION_RESULT> &results, 
+   static void GetCollisionResults(TraceFunc *traceFunc, std::vector<COLLISION_RESULT> &results, 
       std::vector<TRILATERATION_DATA> &distanceList, unsigned int id, float radius)
    {
       std::vector<TRILATERATION_DATA>::iterator new_last = 
          std::remove_if(distanceList.begin(), distanceList.end(), std::bind2nd(OutsideRadius(), radius));
 
       COLLISION_RESULT found_result;
-      unsigned int push_count = 0;
       if (new_last != distanceList.begin())
       {
          /* how many collisions .. it's only a collision if a point in all of it's three dimensions hit
@@ -46,24 +43,24 @@ private:
          // sort in order of ID value to cause grouping
          std::sort(distanceList.begin(), new_last, 
                   cBubbleBubble::TRILATERATION_DATA_id_LessThan);
-            
+         
          // find a sequence of 3 of the same ID's in a row
          std::vector<TRILATERATION_DATA>::iterator unit_iterator;
             
-         unsigned int last_id;
-         unsigned int id_count;
-         last_id = 0;
-         id_count = 1;
+         unsigned int previous_id = 0;
+         bool have_previous_id = false;
+         unsigned int id_count = 1;
 
          for (unit_iterator = distanceList.begin(); unit_iterator != new_last; unit_iterator++)
          {
-            if (last_id == unit_iterator->id)
+            if (have_previous_id && previous_id == unit_iterator->id)
             {
                id_count++;
             }
             else
             {
-               last_id = unit_iterator->id;
+               have_previous_id = true;
+               previous_id = unit_iterator->id;
                id_count = 1;
             }
 
@@ -74,16 +71,12 @@ private:
                //an ID has occured three times, one for each axis so this is a collision
                found_result.mCenterID = id; 
                results.push_back(found_result);
-               push_count++;
-
-              /* wchar_t info_line[80];
-               wsprintf(info_line, L"ID = %i, other one = %i\n", found_result.mCenterID, found_result.mDistanceUnits[0].id);
-               OutputDebugString(info_line);*/
             }
-         }      
+         } 
       }
    };
-      
+  
+   TraceFunc *mTraceFunc;
    const std::vector<cBubbleBubble::PTR> &mGroupList;
    std::vector<COLLISION_RESULT> &mCollisionResults;
    std::vector<TRILATERATION_DATA> &mDistanceList;
@@ -91,10 +84,11 @@ private:
 
 public:
    cBubbleFindCollisions(
+         TraceFunc *traceFunc,
          const std::vector<cBubbleBubble::PTR> &collisionList, 
          std::vector<TRILATERATION_DATA> &dlist, 
          std::vector<COLLISION_RESULT> &results,
-         bool &abort) : mGroupList(collisionList), mCollisionResults(results), mDistanceList(dlist), mAbort(abort) {};
+         bool &abort) : mTraceFunc(traceFunc), mGroupList(collisionList), mCollisionResults(results), mDistanceList(dlist), mAbort(abort) {};
 
    inline result_type operator () (const argument_type& center) const
    { 
@@ -106,9 +100,9 @@ public:
             return;
 
          std::for_each(mGroupList.begin(), mGroupList.end(),                   
-            std::bind1st(cBubbleDimensionCracker(mDistanceList, mAbort), center));
+            std::bind1st(cBubbleDimensionCracker(mTraceFunc, mDistanceList, mAbort), center));
 
-         GetCollisionResults(mCollisionResults, mDistanceList, center.ptr->GetID(), center.ptr->GetRadius());
+         GetCollisionResults(mTraceFunc, mCollisionResults, mDistanceList, center.ptr->GetID(), center.ptr->GetRadius());
          center.ptr->DistanceListUpdated(mDistanceList, mCollisionResults);
       }
       catch (int code)
