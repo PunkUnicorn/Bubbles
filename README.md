@@ -1,6 +1,12 @@
 Bubbles
 =======
 
+Dependancies:
+-------------
+SDL 1.2
+http://www.libsdl.org/download-1.2.php
+
+
 Collision detection engine, Bubbles
 
 This is a 3D collision detection engine. Written in C++ with the STL. It uses SDL 1.2.
