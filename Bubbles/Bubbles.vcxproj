@@ -76,7 +76,9 @@ copy $(TargetDir)\Bubbles.* "C:\Users\Matthew\Documents\Visual Studio 2010\Proje
     <PostBuildEvent>
       <Command>md "$(OutDir)..\..\Publish" 
 md "$(OutDir)..\..\Publish\$(Configuration)"
-xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y</Command>
+xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y
+
+xcopy "$(SolutionDir)$(ConfigurationName)\$(TargetName).*" "$(SolutionDir)..\..\Publish\$(Configuration)\*.*" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -107,7 +109,7 @@ xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y<
 md "$(OutDir)..\..\Publish\$(Configuration)"
 xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y
 
-xcopy "$(SolutionDir)$(ConfigurationName)\Bubbles.*" "C:\Users\Matthew\workspace\Publish" /Y</Command>
+xcopy "$(SolutionDir)$(ConfigurationName)\$(TargetName).*" "$(SolutionDir)..\..\Publish\$(Configuration)\*.*" /Y</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
