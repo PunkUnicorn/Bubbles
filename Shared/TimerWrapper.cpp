@@ -68,9 +68,7 @@ unsigned int cTimerWrapper::timer_callback(unsigned int interval, void *pParam)
    catch (...)
    {
       if (envoke->mAbort) throw -999;
-      //throw -42;
    }
-   SDL_Delay(0);
 
    return envoke->mEventCallbackDelay;
 }
@@ -95,7 +93,7 @@ int cTimerWrapper::thread_function(void *data)
    {
       if (timer->mPaused)
       {
-         static const Uint32 GIVE_IT_A_MONKEY = 200;
+         static const Uint32 GIVE_IT_A_MONKEY = 500;
          SDL_Delay(GIVE_IT_A_MONKEY);
          continue;
       }

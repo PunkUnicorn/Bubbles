@@ -22,11 +22,12 @@ namespace Bubbles
 class cRefreshWorklistCoords : public std::unary_function<cBubbleBubble::PTR, void>
 {
 private:
+	Uint32 mNow;
    bool &mAbort;
 
 public:
-   cRefreshWorklistCoords(bool &abort) : mAbort(abort) { }
-   inline result_type operator () (const argument_type &workListItem) const { workListItem.ptr->ClearCache(); } 
+   cRefreshWorklistCoords(Uint32 now, bool &abort) : mNow(now), mAbort(abort) { }
+   inline result_type operator () (const argument_type &workListItem) const { workListItem.ptr->ClearCache(mNow); } 
 };
 
 class cBubbleEngine : public TimerWrapper::cTimerWrapper
@@ -70,7 +71,7 @@ public:
 
    inline void Purge(void)
    {
-      // TODO: recruit minions to write this
+      // TODO: take over the world and recruit minions to write this
    }
 
    inline void FactoryAddWorkList(cBubbleBubble::PTR &addMe) 
@@ -167,7 +168,7 @@ private:
    std::vector<cBubbleBubble::PTR> mRecycleBin; // deleted bubbles
 
    std::vector<TRILATERATION_DATA> mDistanceList; // results of relative distances
-   // second bank of these?
+   // second bank of these? oops
 
    std::vector<COLLISION_RESULT> mCollisionResults1; // results of found collisions
    std::vector<COLLISION_RESULT> mCollisionResults2; // results of found collisions
@@ -179,6 +180,9 @@ private:
    void EventTimer(void)
    {
       EventTimerLocked();
+
+	  if (mClearCacheFunc != NULL)
+		 (*mClearCacheFunc)(mGroupID);
    }
 
    void EventTimerLocked(void)
@@ -187,7 +191,6 @@ private:
       if (mTimerTrace != NULL)
          start = SDL_GetTicks();
 
-      SDL_Delay(0);
       TimerWrapper::cMutexWrapper::Lock lock(GetEngineCycleLock());
 
       if (this->TimerWrapper::cTimerWrapper::IsAborting()) return;
@@ -201,11 +204,9 @@ private:
          std::vector<COLLISION_RESULT> &useResultsBuffer = (useThread1 ? mCollisionResults1 : mCollisionResults2);
          useResultsBuffer.clear();
 
-         if (mClearCacheFunc != NULL)
-            (*mClearCacheFunc)(mGroupID);
-
+		 Uint32 now = SDL_GetTicks();
          std::for_each(mWorkList.begin(), mWorkList.end(), 
-            cRefreshWorklistCoords(this->TimerWrapper::cTimerWrapper::mAbort));
+            cRefreshWorklistCoords(now, this->TimerWrapper::cTimerWrapper::mAbort));
 
          if (this->TimerWrapper::cTimerWrapper::IsAborting()) throw -999;
 

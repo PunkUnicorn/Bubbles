@@ -41,12 +41,14 @@ private:
    DistanceListUpdatedFunc *mDistanceListUpdatedFunc;
    float lastX, lastY, lastZ;
    bool mCached;
+   Uint32 mCacheUseBy; // time at which this cached value starts to smell and be poisenous 
+   Uint32 mCacheAgeOffset; // staggered interval that differenciates this bubbles cache clear slot
 
 public:   
-   inline void GetCachedCenter(float &x, float &y, float &z) 
+   inline void GetCachedCenter(Uint32 now, float &x, float &y, float &z) 
    {
       if (GetIsDeleted() == false && mCached == false) 
-         GetCollisionCenter(x, y, z);
+         GetCollisionCenter(now, x, y, z);
       else
       {
          x = lastX;
@@ -54,14 +56,15 @@ public:
          z = lastZ;
       }
    }
-   inline void GetCollisionCenter(float &x, float &y, float &z) 
+   inline void GetCollisionCenter(Uint32 now, float &x, float &y, float &z)
    {
-      if (GetIsDeleted() == false && mCached == false)      
+      if (GetIsDeleted() == false && mCached == false)
       {
          (*mGetCoordsFunc)(mEngineID, mID, lastX, lastY, lastZ);
          mCached = true;
+		 mCacheUseBy = now - mCacheAgeOffset;
       }
-      GetCachedCenter(x, y, z);      
+      GetCachedCenter(now, x, y, z);
    }
    inline void FactorySetRadius(float radius) { mRadius = radius; }
    inline void FactorySetID(unsigned int id) { mID = id; }
@@ -76,9 +79,13 @@ public:
    inline bool GetIsDeleted(void) const { return mIsDeleted; }
    inline float GetRadius(void) const { return mRadius; };
    inline unsigned int const GetID(void) const { return mID; }
-   inline void ClearCache(void) { mCached = false; }
+   inline void ClearCache(Uint32 now) 
+   { 
+	  if (now > mCacheUseBy)
+		 mCached = false; 
+   }
 
-   cBubbleBubble(unsigned int engineId, unsigned int id, float radius, GetCoordsFunc *getCoordsFunc) 
+   cBubbleBubble(Uint32 maxAge, unsigned int engineId, unsigned int id, float radius, GetCoordsFunc *getCoordsFunc) 
       : mEngineID(engineId), 
       mID(id), 
       mRadius(radius), 
@@ -88,8 +95,20 @@ public:
       mGetCoordsFunc(getCoordsFunc), 
       mDistanceListUpdatedFunc(NULL),
       lastX(0.0f), lastY(0.0f), lastZ(0.0f),
-      mCached(false)
-   {}
+      mCached(false),
+	  mCacheUseBy(0),
+	  mCacheAgeOffset(0)
+   {
+	   // stagger the cache age refresh time
+	   static Uint32 offset = 0;
+	   static const Uint32 interval = 20;
+
+	   mCacheAgeOffset = offset;
+	   offset += interval;
+
+	   if (offset > maxAge)
+		   offset = 0;
+   }
 
    ~cBubbleBubble(void) {};
 

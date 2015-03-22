@@ -38,7 +38,6 @@
     <ClInclude Include="..\Shared\TimerWrapper.h">
       <Filter>Headers\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="Bubbles.h" />
     <ClInclude Include="..\Shared\STDCALL.h">
       <Filter>Headers\Shared</Filter>
     </ClInclude>
@@ -51,6 +50,7 @@
     <ClInclude Include="..\Shared\TraceFunc.h">
       <Filter>Headers\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\Shared\Bubbles.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">

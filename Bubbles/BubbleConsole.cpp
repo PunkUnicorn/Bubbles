@@ -87,7 +87,7 @@ extern "C" static void STDCALL ConsoleGetCollisionReportCallback(unsigned int gr
                 //std::cerr << "\t" << "{ ""y"":""" << oneBang->mDistanceUnits[1].rel_coord << """" << "}" << std::endl;
                 //std::cerr << "\t" << "{ ""x"":""" << oneBang->mDistanceUnits[2].rel_coord << """" << "}" << std::endl;
   
-                std::cerr << "\t" << "{ ""radius"":""" << oneBang->mDistanceUnits[0].radius << "}";
+                std::cerr << "\t" << "{ ""width"":""" << oneBang->mDistanceUnits[0].width << "}";
 
                 std::cerr << "\t" << "{ ""xDist"":""" << oneBang->mDistanceUnits[0].abs_dist << """" << "}" << std::endl;
                 std::cerr << "\t" << "{ ""yDist"":""" << oneBang->mDistanceUnits[1].abs_dist << """" << "}" << std::endl;

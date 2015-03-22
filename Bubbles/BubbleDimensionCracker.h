@@ -29,20 +29,14 @@ public:
    { };
 
    inline void MakeAxisUnit(const first_argument_type &universeCenter, const second_argument_type &from_this_shape, 
-      float from_this_shapeX, //float from_this_shapeR,
-      float universeCenterX, //float universeCenterR,
-      TRILATERATION_DATA &new_unit) const
+						float from_this_shapeX, float universeCenterX, TRILATERATION_DATA &new_unit) const
    {
-      //new_unit.rel_coord = from_this_shapeX - universeCenterX;
       if (universeCenterX > from_this_shapeX)
-      {
-         new_unit.abs_dist = (universeCenterX/* - universeCenterR*/) - (from_this_shapeX /*+ from_this_shapeR*/);
-      }
+         new_unit.abs_dist = (universeCenterX) - (from_this_shapeX);
       else
-      {
-         new_unit.abs_dist = (from_this_shapeX/* - from_this_shapeR*/) - (universeCenterX/* + universeCenterR*/);
-      }
-      mDistanceList.push_back(new_unit);
+         new_unit.abs_dist = (from_this_shapeX) - (universeCenterX);
+
+	  mDistanceList.push_back(new_unit);
    }
 
    /* find the distance units from 'me' to everything else in the universe  */
@@ -54,7 +48,7 @@ public:
       if (from_this_shape.ptr->GetID() == universeCenter.ptr->GetID()) 
          return;
 
-      // we can't see etheral bubbles
+      // we can't see the other bubble if it's etheral
       if (from_this_shape.ptr->GetEtherealness()) 
          return;
 
@@ -65,83 +59,54 @@ public:
       if (universeCenter.ptr->GetIsDeleted()) 
          return;
 
+	  Uint32 now = SDL_GetTicks();
+
       float from_this_shapeX, from_this_shapeY, from_this_shapeZ, from_this_shapeR;
-      float universeCenterX, universeCenterY, universeCenterZ;//, universeCenterR;
+      float universeCenterX, universeCenterY, universeCenterZ;
       unsigned int newId = from_this_shape.ptr->GetID();
 
-      from_this_shape.ptr->GetCachedCenter(from_this_shapeX, from_this_shapeY, from_this_shapeZ);
+      from_this_shape.ptr->GetCachedCenter(now, from_this_shapeX, from_this_shapeY, from_this_shapeZ);
       from_this_shapeR = from_this_shape.ptr->GetRadius();
-      universeCenter.ptr->GetCollisionCenter(universeCenterX, universeCenterY, universeCenterZ);
-      //universeCenterR = from_this_shape.ptr->GetRadius();
+      universeCenter.ptr->GetCollisionCenter(now, universeCenterX, universeCenterY, universeCenterZ);
 
+	  /* scope block */
       {
          TRILATERATION_DATA new_unit = {0};
          new_unit.id = newId;
          new_unit.axis = cAxisSplitterAXIS::X;
-         new_unit.radius = from_this_shapeR;
+         new_unit.width = from_this_shapeR;
 
          MakeAxisUnit(from_this_shape, universeCenter, 
             from_this_shapeX,
             universeCenterX,
             new_unit);
-     
-         /*new_unit.rel_coord = (from_this_shapeX + from_this_shapeR) - (universeCenterX + universeCenterR);
-         if (universeCenterX > from_this_shapeX)
-         {
-            new_unit.abs_dist = (universeCenterX - universeCenterR) - (from_this_shapeX + from_this_shapeR);
-         }
-         else
-         {
-            new_unit.abs_dist = (from_this_shapeX - from_this_shapeR) - (universeCenterX + universeCenterR);
-         }
-         mDistanceList.push_back(new_unit);*/
       }
 
-
+	  /* scope block attack of the clones*/
       {
          TRILATERATION_DATA new_unit = {0};
          new_unit.id = newId;
-         new_unit.axis = cAxisSplitterAXIS::Y;
-         new_unit.radius = from_this_shapeR;
+         new_unit.axis = cAxisSplitterAXIS::Y; // difference
+         new_unit.width = from_this_shapeR;
 
          MakeAxisUnit(from_this_shape, universeCenter, 
-            from_this_shapeY, //from_this_shapeR, 
-            universeCenterY, //universeCenterR, 
-            new_unit);
-
-         /*new_unit.rel_coord = from_this_shapeY - universeCenterY;
-         if (universeCenterY > from_this_shapeY)
-         {
-            new_unit.abs_dist = universeCenterY - from_this_shapeY;
-         }
-         else
-         {
-            new_unit.abs_dist = from_this_shapeY - universeCenterY;
-         }*/
-         //mDistanceList.push_back(new_unit);
+            from_this_shapeY, // difference
+            universeCenterY, // difference
+            new_unit); // difference
       }
 
 
+	  /* scope block revenge of the Ctrl-Cth*/
       {
          TRILATERATION_DATA new_unit = {0};
          new_unit.id = newId;
-         new_unit.axis = cAxisSplitterAXIS::Z;
-         new_unit.radius = from_this_shapeR;
+         new_unit.axis = cAxisSplitterAXIS::Z; // difference
+         new_unit.width = from_this_shapeR;
 
          MakeAxisUnit(from_this_shape, universeCenter, 
-            from_this_shapeZ, //from_this_shapeR, 
-            universeCenterZ, //universeCenterR, 
-            new_unit);
-         /*new_unit.rel_coord = from_this_shapeZ - universeCenterZ;
-         if (universeCenterZ > from_this_shapeZ)
-         {
-            new_unit.abs_dist = universeCenterZ - from_this_shapeZ;
-         }
-         else
-         {
-            new_unit.abs_dist = from_this_shapeZ - universeCenterZ;
-         }
-         mDistanceList.push_back(new_unit);*/
+            from_this_shapeZ, // difference
+            universeCenterZ, // difference
+            new_unit); // difference
       }
    };
 };

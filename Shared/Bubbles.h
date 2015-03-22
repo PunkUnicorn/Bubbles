@@ -20,7 +20,7 @@ typedef struct
    /*cAxisSplitterAXIS*/int axis; //which axis this represents either the x(0), y(1) or z(2)
    float abs_dist; //absolute distance from id
    //float rel_coord; //value of the axis (value of x, y or z)
-   float radius;
+   float width;
    unsigned int id;
 } TRILATERATION_DATA;
 
@@ -43,12 +43,14 @@ extern "C" DLL_PUBLIC unsigned int STDCALL GetEngineCount(void);
 extern "C" DLL_PUBLIC unsigned int STDCALL AddEngineGroup(unsigned int engineId);
 extern "C" DLL_PUBLIC void STDCALL AddEngineToGroup(unsigned int engineGroupId, unsigned int engineId);
 extern "C" DLL_PUBLIC unsigned int STDCALL GetGroupCount(void);
-extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int bubbleId, float radius, GetCoordsFunc *fptr);
+extern "C" DLL_PUBLIC bool STDCALL AddBubble(unsigned int engineId, unsigned int bubbleId, float width, GetCoordsFunc *fptr);
 extern "C" DLL_PUBLIC void STDCALL RemoveBubble(unsigned int engineId, unsigned int bubbleId);
 extern "C" DLL_PUBLIC bool STDCALL GetEtheralness(unsigned int engineId, unsigned int bubbleId);
 extern "C" DLL_PUBLIC void STDCALL SetEtheralness(unsigned int engineId, unsigned int bubbleId, bool etheralness); //etheral bubbles can be hit but don't hit anything back. Invisibleish
-extern "C" DLL_PUBLIC unsigned int STDCALL GetRadius(unsigned int engineId, unsigned int bubbleId);
-extern "C" DLL_PUBLIC unsigned int STDCALL SetRadius(unsigned int engineId, unsigned int bubbleId, float radius);
+/*depreciated*/extern "C" DLL_PUBLIC float STDCALL GetRadius(unsigned int engineId, unsigned int bubbleId);
+extern "C" DLL_PUBLIC float STDCALL GetWidth(unsigned int engineId, unsigned int bubbleId);
+/*depreciated*/extern "C" DLL_PUBLIC unsigned int STDCALL SetRadius(unsigned int engineId, unsigned int bubbleId, float width);
+extern "C" DLL_PUBLIC unsigned int STDCALL SetWidth(unsigned int engineId, unsigned int bubbleId, float width);
 extern "C" DLL_PUBLIC unsigned int STDCALL GetBubbleCount(unsigned int engineId);
 extern "C" DLL_PUBLIC void STDCALL StartEngine(unsigned int engineId, CollisionReportFunc *callback, unsigned int intervalMS);
 extern "C" DLL_PUBLIC void STDCALL PauseEngine(unsigned int engineId, bool pause);

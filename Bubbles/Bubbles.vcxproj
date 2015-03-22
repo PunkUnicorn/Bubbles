@@ -21,12 +21,14 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -74,11 +76,13 @@
 copy $(TargetDir)\Bubbles.* "C:\Users\Matthew\Documents\Visual Studio 2010\Projects\WinForms_CSExample\bin\Debug"</Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>md "$(OutDir)..\..\Publish" 
+      <Command>
+md "$(OutDir)..\..\Publish" 
 md "$(OutDir)..\..\Publish\$(Configuration)"
 xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y
 
-xcopy "$(SolutionDir)$(ConfigurationName)\$(TargetName).*" "$(SolutionDir)..\..\Publish\$(Configuration)\*.*" /Y</Command>
+REM xcopy "$(SolutionDir)$(ConfigurationName)\$(TargetName).*" "$(SolutionDir)..\..\Publish\$(Configuration)\*.*" /Y</Command>
+      <Message>Copy built product to peer directory called Publish</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,11 +109,12 @@ xcopy "$(SolutionDir)$(ConfigurationName)\$(TargetName).*" "$(SolutionDir)..\..\
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>md "$(OutDir)..\..\Publish" 
+      <Command>
+md "$(OutDir)..\..\Publish" 
 md "$(OutDir)..\..\Publish\$(Configuration)"
 xcopy "$(OutDir)$(TargetName).???" "$(OutDir)..\..\Publish\$(Configuration)" /Y
 
-xcopy "$(SolutionDir)$(ConfigurationName)\$(TargetName).*" "$(SolutionDir)..\..\Publish\$(Configuration)\*.*" /Y</Command>
+REM xcopy "$(SolutionDir)$(ConfigurationName)\$(TargetName).*" "$(SolutionDir)..\..\Publish\$(Configuration)\*.*" /Y</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -117,6 +122,9 @@ xcopy "$(SolutionDir)$(ConfigurationName)\$(TargetName).*" "$(SolutionDir)..\..\
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Shared\Bubbles.h">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="..\Shared\CoordCallback.h" />
     <ClInclude Include="..\Shared\DLL_PUBLIC.h" />
     <ClInclude Include="..\Shared\STDCALL.h" />
@@ -124,7 +132,6 @@ xcopy "$(SolutionDir)$(ConfigurationName)\$(TargetName).*" "$(SolutionDir)..\..\
     <ClInclude Include="..\Shared\TraceFunc.h" />
     <ClInclude Include="BubbleCollisionReportThread.h" />
     <ClInclude Include="BubbleConsole.h" />
-    <ClInclude Include="Bubbles.h" />
     <ClInclude Include="BubbleTrace.h" />
     <ClInclude Include="BubbleBubble.h" />
     <ClInclude Include="BubbleDimensionCracker.h" />

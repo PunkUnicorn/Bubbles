@@ -11,6 +11,7 @@
 #include <vector>
 #include <algorithm>
 #include <map>
+#include <functional>
 
 namespace Bubbles
 {
@@ -21,9 +22,9 @@ private:
    class OutsideRadius : public std::binary_function<TRILATERATION_DATA, float, bool>
    {
       public:
-         inline result_type operator () (const first_argument_type& otherThing, const second_argument_type& radius) const
+         inline result_type operator () (const first_argument_type& otherThing, const second_argument_type& width) const
          {
-            return radius < (otherThing.abs_dist - otherThing.radius);
+            return width < (otherThing.abs_dist - otherThing.width);
          };
    };
 
